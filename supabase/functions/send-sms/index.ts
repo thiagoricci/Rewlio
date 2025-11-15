@@ -61,7 +61,9 @@ Deno.serve(async (req) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
-    const supabase = createClient(
+    
+    // Create client for auth validation
+    const supabaseAuth = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!
     );
@@ -70,7 +72,7 @@ Deno.serve(async (req) => {
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser(token);
+    } = await supabaseAuth.auth.getUser(token);
 
     if (authError || !user) {
       console.error('Auth error:', authError);
@@ -79,6 +81,12 @@ Deno.serve(async (req) => {
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Create admin client for database operations
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
 
     const { phone_number, message_body }: SendSMSRequest = await req.json();
     console.log('Send SMS request:', { phone_number, message_body, user_id: user.id });
