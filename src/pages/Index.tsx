@@ -5,26 +5,26 @@ import { Database, MessageSquare, Shield, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
-
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
-
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
+    const {
+      data: {
+        subscription
       }
-    );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
-
+    supabase.auth.getSession().then(({
+      data: {
+        session
+      }
+    }) => {
+      setUser(session?.user ?? null);
+    });
     return () => subscription.unsubscribe();
   }, []);
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="container mx-auto px-4 py-6 flex justify-between items-center border-b">
         <div className="flex items-center space-x-2">
@@ -32,25 +32,21 @@ const Index = () => {
           <span className="font-semibold text-lg">Meslio</span>
         </div>
         <div className="flex space-x-4">
-          {user ? (
-            <>
+          {user ? <>
               <Button variant="ghost" asChild>
                 <Link to="/dashboard">Dashboard</Link>
               </Button>
               <Button asChild>
                 <Link to="/settings">Settings</Link>
               </Button>
-            </>
-          ) : (
-            <>
+            </> : <>
               <Button variant="ghost" asChild>
                 <Link to="/login">Login</Link>
               </Button>
               <Button asChild>
                 <Link to="/signup">Get Started</Link>
               </Button>
-            </>
-          )}
+            </>}
         </div>
       </header>
 
@@ -68,25 +64,21 @@ const Index = () => {
             Perfect for email addresses, physical addresses, and account numbers.
           </p>
           <div className="flex gap-4 justify-center">
-            {user ? (
-              <>
+            {user ? <>
                 <Button size="lg" asChild>
                   <Link to="/dashboard">View Dashboard</Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild>
                   <Link to="/test">Test System</Link>
                 </Button>
-              </>
-            ) : (
-              <>
+              </> : <>
                 <Button size="lg" asChild>
                   <Link to="/signup">Get Started Free</Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild>
                   <Link to="/login">Sign In</Link>
                 </Button>
-              </>
-            )}
+              </>}
           </div>
         </div>
 
@@ -168,7 +160,7 @@ const Index = () => {
                 <div>
                   <h3 className="font-semibold mb-1">SMS Sent to Caller</h3>
                   <p className="text-muted-foreground text-sm">
-                    System sends an SMS to the caller's phone with instructions and examples
+                    System sends an SMS to the caller's phone      
                   </p>
                 </div>
               </div>
@@ -200,8 +192,6 @@ const Index = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
