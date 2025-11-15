@@ -42,7 +42,13 @@ export default function Test() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({ call_id: callId, caller_number: phoneNumber, info_type: infoType, message })
+        body: JSON.stringify({ 
+          call_id: callId, 
+          caller_number: phoneNumber, 
+          info_type: infoType, 
+          message,
+          user_id: session.user.id
+        })
       });
 
       const data = await response.json();
