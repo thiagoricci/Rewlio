@@ -113,12 +113,16 @@ export default function Inbox() {
   // Auto-scroll to latest message
   useEffect(() => {
     if (scrollRef.current) {
-      setTimeout(() => {
-        scrollRef.current?.scrollTo({
-          top: scrollRef.current.scrollHeight,
-          behavior: "smooth",
-        });
-      }, 100);
+      // Find the viewport element inside the ScrollArea
+      const viewport = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (viewport) {
+        setTimeout(() => {
+          viewport.scrollTo({
+            top: viewport.scrollHeight,
+            behavior: "smooth",
+          });
+        }, 100);
+      }
     }
   }, [selectedMessages]);
 
