@@ -1,0 +1,239 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+interface ValidationResult {
+  valid: boolean;
+  normalized?: string;
+  error?: string;
+}
+
+function validateEmail(email: string): ValidationResult {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const trimmed = email.trim();
+  
+  if (!emailRegex.test(trimmed)) {
+    return {
+      valid: false,
+      error: 'Please use format: name@example.com'
+    };
+  }
+  
+  return {
+    valid: true,
+    normalized: trimmed.toLowerCase()
+  };
+}
+
+function validateAddress(address: string): ValidationResult {
+  const trimmed = address.trim();
+  
+  if (!/\d/.test(trimmed)) {
+    return {
+      valid: false,
+      error: 'Address must include a street number'
+    };
+  }
+  
+  if (trimmed.length < 15) {
+    return {
+      valid: false,
+      error: 'Please include street number, city, state, and ZIP'
+    };
+  }
+  
+  return {
+    valid: true,
+    normalized: trimmed
+  };
+}
+
+function validateAccountNumber(accountNumber: string): ValidationResult {
+  const digitsOnly = accountNumber.replace(/\D/g, '');
+  
+  if (digitsOnly.length < 5) {
+    return {
+      valid: false,
+      error: 'Account number must be at least 5 digits'
+    };
+  }
+  
+  if (digitsOnly.length > 20) {
+    return {
+      valid: false,
+      error: 'Account number must be no more than 20 digits'
+    };
+  }
+  
+  return {
+    valid: true,
+    normalized: digitsOnly
+  };
+}
+
+function validate(value: string, type: string): ValidationResult {
+  switch (type) {
+    case 'email':
+      return validateEmail(value);
+    case 'address':
+      return validateAddress(value);
+    case 'account_number':
+      return validateAccountNumber(value);
+    default:
+      return {
+        valid: false,
+        error: 'Unknown validation type'
+      };
+  }
+}
+
+async function sendSMS(to: string, message: string): Promise<void> {
+  const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+  const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+  const fromNumber = Deno.env.get('TWILIO_PHONE_NUMBER');
+
+  const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
+  
+  const formData = new URLSearchParams();
+  formData.append('To', to);
+  formData.append('From', fromNumber!);
+  formData.append('Body', message);
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Basic ' + btoa(`${accountSid}:${authToken}`),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: formData.toString(),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('Twilio error:', error);
+    throw new Error(`Failed to send SMS: ${error}`);
+  }
+}
+
+function getInfoTypeLabel(infoType: string): string {
+  switch (infoType) {
+    case 'email': return 'email address';
+    case 'address': return 'full address';
+    case 'account_number': return 'account number';
+    default: return 'information';
+  }
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    // Parse form data from Twilio
+    const formData = await req.formData();
+    const from = formData.get('From') as string;
+    const body = formData.get('Body') as string;
+
+    console.log('Received SMS from:', from);
+    console.log('Message:', body);
+
+    if (!from || !body) {
+      console.error('Missing From or Body');
+      return new Response(
+        '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
+        { status: 200, headers: { 'Content-Type': 'text/xml' } }
+      );
+    }
+
+    // Find pending request for this phone number
+    const { data: requests, error: findError } = await supabase
+      .from('info_requests')
+      .select('*')
+      .eq('recipient_phone', from)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (findError || !requests || requests.length === 0) {
+      console.log('No pending request found for:', from);
+      return new Response(
+        '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
+        { status: 200, headers: { 'Content-Type': 'text/xml' } }
+      );
+    }
+
+    const request = requests[0];
+    console.log('Found request:', request.request_id);
+
+    // Validate the response
+    const validation = validate(body, request.info_type);
+
+    if (validation.valid) {
+      // Update request as completed
+      const { error: updateError } = await supabase
+        .from('info_requests')
+        .update({
+          status: 'completed',
+          received_value: validation.normalized,
+          received_at: new Date().toISOString()
+        })
+        .eq('id', request.id);
+
+      if (updateError) {
+        console.error('Error updating request:', updateError);
+      } else {
+        console.log('Request completed successfully');
+        
+        // Send confirmation SMS
+        const label = getInfoTypeLabel(request.info_type);
+        const confirmationMessage = `✓ Got it!
+
+Your ${label}: ${validation.normalized}
+
+Continuing with your call...`;
+        
+        try {
+          await sendSMS(from, confirmationMessage);
+        } catch (smsError) {
+          console.error('Failed to send confirmation SMS:', smsError);
+        }
+      }
+    } else {
+      // Send error SMS
+      console.log('Validation failed:', validation.error);
+      const errorMessage = `That doesn't look right.
+
+${validation.error}
+
+Please reply again with the correct information.`;
+      
+      try {
+        await sendSMS(from, errorMessage);
+      } catch (smsError) {
+        console.error('Failed to send error SMS:', smsError);
+      }
+    }
+
+    // Return empty TwiML response
+    return new Response(
+      '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
+      { status: 200, headers: { 'Content-Type': 'text/xml' } }
+    );
+
+  } catch (error) {
+    console.error('Error:', error);
+    return new Response(
+      '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
+      { status: 200, headers: { 'Content-Type': 'text/xml' } }
+    );
+  }
+});

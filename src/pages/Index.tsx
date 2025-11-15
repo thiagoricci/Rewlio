@@ -24,9 +24,7 @@ const Index = () => {
               <Link to="/dashboard">View Dashboard</Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <a href="https://docs.retellai.com" target="_blank" rel="noopener noreferrer">
-                View Docs
-              </a>
+              <Link to="/test">Test System</Link>
             </Button>
           </div>
         </div>
