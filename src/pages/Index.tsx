@@ -1,11 +1,59 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Database, MessageSquare, Shield, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 const Index = () => {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="container mx-auto px-4 py-6 flex justify-between items-center border-b">
+        <div className="flex items-center space-x-2">
+          <MessageSquare className="h-6 w-6 text-primary" />
+          <span className="font-semibold text-lg">SMS Collector</span>
+        </div>
+        <div className="flex space-x-4">
+          {user ? (
+            <>
+              <Button variant="ghost" asChild>
+                <Link to="/dashboard">Dashboard</Link>
+              </Button>
+              <Button asChild>
+                <Link to="/settings">Settings</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" asChild>
+                <Link to="/login">Login</Link>
+              </Button>
+              <Button asChild>
+                <Link to="/signup">Get Started</Link>
+              </Button>
+            </>
+          )}
+        </div>
+      </header>
+
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-6">
@@ -20,12 +68,25 @@ const Index = () => {
             Perfect for email addresses, physical addresses, and account numbers.
           </p>
           <div className="flex gap-4 justify-center">
-            <Button size="lg" asChild>
-              <Link to="/dashboard">View Dashboard</Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link to="/test">Test System</Link>
-            </Button>
+            {user ? (
+              <>
+                <Button size="lg" asChild>
+                  <Link to="/dashboard">View Dashboard</Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <Link to="/test">Test System</Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button size="lg" asChild>
+                  <Link to="/signup">Get Started Free</Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <Link to="/login">Sign In</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
