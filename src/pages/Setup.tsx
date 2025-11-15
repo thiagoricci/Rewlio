@@ -48,8 +48,8 @@ const Setup = () => {
     : "Save your Twilio credentials first to generate your unique URL";
 
   const retellFunctionJson = `{
-  "name": "collect_info_via_sms",
-  "description": "Send SMS to collect hard-to-spell information from caller",
+            "name": "contact_human",
+            "description": "Send SMS to collect information or contact the human caller",
   "parameters": {
     "type": "object",
     "properties": {
@@ -347,7 +347,7 @@ const Setup = () => {
                   <li className="space-y-2">
                     <span className="font-semibold">Configure the function</span>
                     <div className="ml-6 space-y-2 text-sm text-muted-foreground">
-                      <p><strong>Name:</strong> Must be exactly <code className="bg-muted px-2 py-1 rounded">collect_info_via_sms</code></p>
+                      <p><strong>Name:</strong> Must be exactly <code className="bg-muted px-2 py-1 rounded">contact_human</code></p>
                       <p><strong>message parameter:</strong> The SMS text your caller will receive</p>
                       <p><strong>info_type parameter:</strong> Choose from "email", "address", or "account_number"</p>
                     </div>
@@ -357,7 +357,7 @@ const Setup = () => {
                 <Alert>
                   <Info className="h-4 w-4" />
                   <AlertDescription>
-                    The function name must be exactly <code className="bg-muted px-2 py-1 rounded">collect_info_via_sms</code> for the webhook to work correctly
+                    The function name must be exactly <code className="bg-muted px-2 py-1 rounded">contact_human</code> for the webhook to work correctly
                   </AlertDescription>
                 </Alert>
               </CardContent>
@@ -409,16 +409,16 @@ const Setup = () => {
                 </p>
                 <pre className="bg-muted p-4 rounded-lg text-xs overflow-x-auto">
 {`When you need to collect email addresses, physical addresses, 
-or account numbers, use the collect_info_via_sms function.
+or account numbers, use the contact_human function.
 
 Examples:
 - "I'll text you so you can type your email address"
-  Then call: collect_info_via_sms with 
+  Then call: contact_human with 
   message="Please reply with your email address" 
   and info_type="email"
 
 - "Let me send you a text for your mailing address"
-  Then call: collect_info_via_sms with 
+  Then call: contact_human with 
   message="Please reply with your full mailing address" 
   and info_type="address"`}
                 </pre>
