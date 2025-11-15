@@ -53,7 +53,7 @@ const Navigation = () => {
           <div className="flex items-center space-x-8">
             <Link to="/" className="flex items-center space-x-2">
               <MessageSquare className="h-6 w-6 text-primary" />
-              <span className="font-semibold text-lg">SMS Collector</span>
+              <span className="font-semibold text-lg">Meslio</span>
             </Link>
             <div className="flex space-x-4">
               <Link to="/dashboard">
