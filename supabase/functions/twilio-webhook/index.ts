@@ -90,16 +90,12 @@ function validate(value: string, type: string): ValidationResult {
   }
 }
 
-async function sendSMS(to: string, message: string): Promise<void> {
-  const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
-  const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-  const fromNumber = Deno.env.get('TWILIO_PHONE_NUMBER');
-
+async function sendSMS(to: string, message: string, accountSid: string, authToken: string, fromNumber: string): Promise<void> {
   const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
   
   const formData = new URLSearchParams();
   formData.append('To', to);
-  formData.append('From', fromNumber!);
+  formData.append('From', fromNumber);
   formData.append('Body', message);
 
   const response = await fetch(url, {
@@ -133,24 +129,41 @@ Deno.serve(async (req) => {
     // Parse form data from Twilio
     const formData = await req.formData();
     const from = formData.get('From') as string;
+    const to = formData.get('To') as string;
     const body = formData.get('Body') as string;
 
-    console.log('Received SMS from:', from);
+    console.log('Received SMS from:', from, 'to:', to);
     console.log('Message:', body);
 
-    if (!from || !body) {
-      console.error('Missing From or Body');
+    if (!from || !to || !body) {
+      console.error('Missing From, To, or Body');
       return new Response(
         '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
         { status: 200, headers: { 'Content-Type': 'text/xml' } }
       );
     }
 
-    // Find pending request for this phone number
+    // Look up which user owns this Twilio phone number
+    const { data: credentials, error: credError } = await supabase
+      .from('user_credentials')
+      .select('user_id, twilio_account_sid, twilio_auth_token, twilio_phone_number')
+      .eq('twilio_phone_number', to)
+      .single();
+
+    if (credError || !credentials) {
+      console.error('Error finding user for phone number:', to, credError);
+      return new Response(
+        '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
+        { status: 200, headers: { 'Content-Type': 'text/xml' } }
+      );
+    }
+
+    // Find pending request for this phone number and user
     const { data: requests, error: findError } = await supabase
       .from('info_requests')
       .select('*')
       .eq('recipient_phone', from)
+      .eq('user_id', credentials.user_id)
       .eq('status', 'pending')
       .order('created_at', { ascending: false })
       .limit(1);
@@ -195,7 +208,13 @@ ${validation.error}
 Please reply again with the correct information.`;
       
       try {
-        await sendSMS(from, errorMessage);
+        await sendSMS(
+          from, 
+          errorMessage,
+          credentials.twilio_account_sid,
+          credentials.twilio_auth_token,
+          credentials.twilio_phone_number
+        );
       } catch (smsError) {
         console.error('Failed to send error SMS:', smsError);
       }

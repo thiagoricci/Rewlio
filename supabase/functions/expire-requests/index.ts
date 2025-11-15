@@ -5,16 +5,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-async function sendSMS(to: string, message: string): Promise<void> {
-  const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
-  const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-  const fromNumber = Deno.env.get('TWILIO_PHONE_NUMBER');
-
+async function sendSMS(to: string, message: string, accountSid: string, authToken: string, fromNumber: string): Promise<void> {
   const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
   
   const formData = new URLSearchParams();
   formData.append('To', to);
-  formData.append('From', fromNumber!);
+  formData.append('From', fromNumber);
   formData.append('Body', message);
 
   const response = await fetch(url, {
@@ -76,14 +72,32 @@ Deno.serve(async (req) => {
       } else {
         console.log(`Updated ${ids.length} requests to expired`);
 
-        // Send timeout SMS to each
+        // Send timeout SMS to each using their user's credentials
         const timeoutMessage = `This request has expired.
 
 If you're still on the call, ask the agent to send a new request.`;
 
         for (const request of expiredRequests) {
           try {
-            await sendSMS(request.recipient_phone, timeoutMessage);
+            // Fetch user's Twilio credentials
+            const { data: credentials, error: credError } = await supabase
+              .from('user_credentials')
+              .select('twilio_account_sid, twilio_auth_token, twilio_phone_number')
+              .eq('user_id', request.user_id)
+              .single();
+
+            if (credError || !credentials) {
+              console.error(`No credentials found for user ${request.user_id}`);
+              continue;
+            }
+
+            await sendSMS(
+              request.recipient_phone, 
+              timeoutMessage,
+              credentials.twilio_account_sid,
+              credentials.twilio_auth_token,
+              credentials.twilio_phone_number
+            );
             console.log(`Sent timeout SMS to ${request.recipient_phone}`);
           } catch (smsError) {
             console.error(`Failed to send timeout SMS to ${request.recipient_phone}:`, smsError);
