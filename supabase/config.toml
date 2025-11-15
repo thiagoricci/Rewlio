@@ -1,1 +1,10 @@
 project_id = "kqzsgqqwnthclrlcfkgs"
+
+[functions.retell-webhook]
+verify_jwt = false
+
+[functions.twilio-webhook]
+verify_jwt = false
+
+[functions.expire-requests]
+verify_jwt = false
