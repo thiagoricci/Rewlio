@@ -82,6 +82,13 @@ const Navigation = () => {
                     Dashboard
                   </Button>
                 </Link>
+                <Link to="/setup">
+                  <Button
+                    variant={location.pathname === "/setup" ? "default" : "ghost"}
+                  >
+                    Setup Guide
+                  </Button>
+                </Link>
                 <Link to="/inbox">
                   <Button
                     variant={location.pathname === "/inbox" ? "default" : "ghost"}
@@ -133,6 +140,14 @@ const Navigation = () => {
                       className="w-full justify-start text-base h-12"
                     >
                       Dashboard
+                    </Button>
+                  </Link>
+                  <Link to="/setup" onClick={handleNavClick}>
+                    <Button
+                      variant={location.pathname === "/setup" ? "default" : "ghost"}
+                      className="w-full justify-start text-base h-12"
+                    >
+                      Setup Guide
                     </Button>
                   </Link>
                   <Link to="/inbox" onClick={handleNavClick}>
