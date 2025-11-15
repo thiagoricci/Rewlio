@@ -5,6 +5,7 @@ import Navigation from "@/components/Navigation";
 import { ConversationCard } from "@/components/inbox/ConversationCard";
 import { MessageBubble } from "@/components/inbox/MessageBubble";
 import { MobileHeader } from "@/components/inbox/MobileHeader";
+import { MessageInput } from "@/components/inbox/MessageInput";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Inbox as InboxIcon, MessageSquare } from "lucide-react";
@@ -109,9 +110,9 @@ export default function Inbox() {
     }
   }, [conversations, selectedPhone, isMobile]);
 
-  // Auto-scroll to latest message on mobile
+  // Auto-scroll to latest message
   useEffect(() => {
-    if (isMobile && showMessages && scrollRef.current) {
+    if (scrollRef.current) {
       setTimeout(() => {
         scrollRef.current?.scrollTo({
           top: scrollRef.current.scrollHeight,
@@ -119,7 +120,7 @@ export default function Inbox() {
         });
       }, 100);
     }
-  }, [isMobile, showMessages, selectedMessages]);
+  }, [selectedMessages]);
 
   const handleConversationSelect = (phoneNumber: string) => {
     setSelectedPhone(phoneNumber);
@@ -183,12 +184,12 @@ export default function Inbox() {
 
                 {/* Message Thread (mobile) */}
                 {showMessages && selectedPhone && (
-                  <Card className="p-0 overflow-hidden">
+                  <Card className="p-0 overflow-hidden flex flex-col h-[calc(100vh-180px)]">
                     <MobileHeader 
                       phoneNumber={selectedPhone} 
                       onBack={handleBackToList}
                     />
-                    <ScrollArea className="h-[calc(100vh-240px)] p-4" ref={scrollRef}>
+                    <ScrollArea className="flex-1 p-4" ref={scrollRef}>
                       {selectedMessages.length > 0 ? (
                         <div className="space-y-2">
                           {selectedMessages.map((msg) => (
@@ -206,6 +207,10 @@ export default function Inbox() {
                         </div>
                       )}
                     </ScrollArea>
+                    <MessageInput 
+                      phoneNumber={selectedPhone}
+                      onMessageSent={() => refetch()}
+                    />
                   </Card>
                 )}
               </>
@@ -236,13 +241,13 @@ export default function Inbox() {
 
                 {/* Message Thread */}
                 <div className="lg:col-span-2">
-                  <Card className="p-4">
-                    <div className="border-b pb-4 mb-4">
+                  <Card className="p-0 overflow-hidden flex flex-col h-[700px]">
+                    <div className="border-b p-4">
                       <h2 className="font-semibold">
                         {selectedPhone ? `Conversation with ${selectedPhone}` : "Select a conversation"}
                       </h2>
                     </div>
-                    <ScrollArea className="h-[600px] pr-4">
+                    <ScrollArea className="flex-1 p-4" ref={scrollRef}>
                       {selectedMessages.length > 0 ? (
                         <div className="space-y-2">
                           {selectedMessages.map((msg) => (
@@ -256,10 +261,16 @@ export default function Inbox() {
                         </div>
                       ) : (
                         <div className="text-center text-muted-foreground py-8">
-                          No messages in this conversation
+                          {selectedPhone ? "No messages in this conversation" : "Select a conversation to view messages"}
                         </div>
                       )}
                     </ScrollArea>
+                    {selectedPhone && (
+                      <MessageInput 
+                        phoneNumber={selectedPhone}
+                        onMessageSent={() => refetch()}
+                      />
+                    )}
                   </Card>
                 </div>
               </div>
