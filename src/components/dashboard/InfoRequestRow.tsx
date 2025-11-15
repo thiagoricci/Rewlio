@@ -1,0 +1,50 @@
+import { TableCell, TableRow } from "@/components/ui/table";
+import { StatusBadge } from "./StatusBadge";
+import { maskPhoneNumber } from "@/lib/phone-utils";
+import { formatDistanceToNow } from "date-fns";
+
+interface InfoRequest {
+  id: string;
+  request_id: string;
+  call_id: string;
+  info_type: string;
+  recipient_phone: string;
+  status: 'pending' | 'completed' | 'expired' | 'invalid';
+  received_value?: string;
+  created_at: string;
+  received_at?: string;
+  expires_at: string;
+}
+
+interface InfoRequestRowProps {
+  request: InfoRequest;
+}
+
+export function InfoRequestRow({ request }: InfoRequestRowProps) {
+  const formatInfoType = (type: string) => {
+    return type.replace('_', ' ').split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  return (
+    <TableRow>
+      <TableCell className="font-mono text-sm">{request.request_id}</TableCell>
+      <TableCell className="font-mono text-sm">{maskPhoneNumber(request.recipient_phone)}</TableCell>
+      <TableCell>{formatInfoType(request.info_type)}</TableCell>
+      <TableCell>
+        <StatusBadge status={request.status} />
+      </TableCell>
+      <TableCell className="max-w-xs truncate">
+        {request.received_value ? (
+          <span className="font-mono text-sm">{request.received_value}</span>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
+      </TableCell>
+      <TableCell className="text-sm text-muted-foreground">
+        {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
+      </TableCell>
+    </TableRow>
+  );
+}
