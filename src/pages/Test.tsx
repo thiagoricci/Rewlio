@@ -12,6 +12,7 @@ export default function Test() {
   const [callId, setCallId] = useState("test-call-" + Date.now());
   const [phoneNumber, setPhoneNumber] = useState("+1");
   const [infoType, setInfoType] = useState("email");
+  const [message, setMessage] = useState("Please reply with your email address so we can send you the confirmation.");
   const { toast } = useToast();
 
   const handleTest = async () => {
@@ -28,7 +29,8 @@ export default function Test() {
           body: JSON.stringify({
             call_id: callId,
             caller_number: phoneNumber,
-            info_type: infoType
+            info_type: infoType,
+            message: message
           })
         }
       );
@@ -106,9 +108,22 @@ export default function Test() {
               </Select>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="message">Custom SMS Message</Label>
+              <Input
+                id="message"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Please reply with your email address..."
+              />
+              <p className="text-xs text-muted-foreground">
+                The exact message that will be sent via SMS
+              </p>
+            </div>
+
             <Button
               onClick={handleTest}
-              disabled={loading || !phoneNumber || phoneNumber.length < 5}
+              disabled={loading || !phoneNumber || phoneNumber.length < 5 || !message}
               className="w-full"
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
