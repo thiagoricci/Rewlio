@@ -2,15 +2,25 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, LogOut } from "lucide-react";
+import { MessageSquare, LogOut, Menu } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 const Navigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -38,8 +48,13 @@ const Navigation = () => {
       toast({
         title: "Signed out successfully",
       });
+      setSheetOpen(false);
       navigate("/");
     }
+  };
+
+  const handleNavClick = () => {
+    setSheetOpen(false);
   };
 
   if (!user) {
@@ -50,49 +65,118 @@ const Navigation = () => {
     <nav className="border-b bg-card">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-8">
-            <Link to="/" className="flex items-center space-x-2">
-              <MessageSquare className="h-6 w-6 text-primary" />
-              <span className="font-semibold text-lg">Meslio</span>
-            </Link>
-            <div className="flex space-x-4">
-              <Link to="/dashboard">
-                <Button
-                  variant={location.pathname === "/dashboard" ? "default" : "ghost"}
-                >
-                  Dashboard
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2">
+            <MessageSquare className="h-6 w-6 text-primary" />
+            <span className="font-semibold text-lg">Meslio</span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          {!isMobile && (
+            <>
+              <div className="flex space-x-4">
+                <Link to="/dashboard">
+                  <Button
+                    variant={location.pathname === "/dashboard" ? "default" : "ghost"}
+                  >
+                    Dashboard
+                  </Button>
+                </Link>
+                <Link to="/inbox">
+                  <Button
+                    variant={location.pathname === "/inbox" ? "default" : "ghost"}
+                  >
+                    Inbox
+                  </Button>
+                </Link>
+                <Link to="/test">
+                  <Button
+                    variant={location.pathname === "/test" ? "default" : "ghost"}
+                  >
+                    Test
+                  </Button>
+                </Link>
+                <Link to="/settings">
+                  <Button
+                    variant={location.pathname === "/settings" ? "default" : "ghost"}
+                  >
+                    Settings
+                  </Button>
+                </Link>
+              </div>
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-muted-foreground">{user.email}</span>
+                <Button variant="outline" size="sm" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
                 </Button>
-              </Link>
-              <Link to="/inbox">
-                <Button
-                  variant={location.pathname === "/inbox" ? "default" : "ghost"}
-                >
-                  Inbox
+              </div>
+            </>
+          )}
+
+          {/* Mobile Menu */}
+          {isMobile && (
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
                 </Button>
-              </Link>
-              <Link to="/test">
-                <Button
-                  variant={location.pathname === "/test" ? "default" : "ghost"}
-                >
-                  Test
-                </Button>
-              </Link>
-              <Link to="/settings">
-                <Button
-                  variant={location.pathname === "/settings" ? "default" : "ghost"}
-                >
-                  Settings
-                </Button>
-              </Link>
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-muted-foreground">{user.email}</span>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
-          </div>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[280px]">
+                <SheetHeader>
+                  <SheetTitle>Menu</SheetTitle>
+                </SheetHeader>
+                <div className="flex flex-col gap-4 mt-8">
+                  <Link to="/dashboard" onClick={handleNavClick}>
+                    <Button
+                      variant={location.pathname === "/dashboard" ? "default" : "ghost"}
+                      className="w-full justify-start text-base h-12"
+                    >
+                      Dashboard
+                    </Button>
+                  </Link>
+                  <Link to="/inbox" onClick={handleNavClick}>
+                    <Button
+                      variant={location.pathname === "/inbox" ? "default" : "ghost"}
+                      className="w-full justify-start text-base h-12"
+                    >
+                      Inbox
+                    </Button>
+                  </Link>
+                  <Link to="/test" onClick={handleNavClick}>
+                    <Button
+                      variant={location.pathname === "/test" ? "default" : "ghost"}
+                      className="w-full justify-start text-base h-12"
+                    >
+                      Test
+                    </Button>
+                  </Link>
+                  <Link to="/settings" onClick={handleNavClick}>
+                    <Button
+                      variant={location.pathname === "/settings" ? "default" : "ghost"}
+                      className="w-full justify-start text-base h-12"
+                    >
+                      Settings
+                    </Button>
+                  </Link>
+                  
+                  <div className="border-t pt-4 mt-4">
+                    <p className="text-sm text-muted-foreground px-3 mb-4 truncate">
+                      {user.email}
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start text-base h-12" 
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="h-5 w-5 mr-3" />
+                      Logout
+                    </Button>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          )}
         </div>
       </div>
     </nav>

@@ -22,20 +22,20 @@ export function ConversationCard({
 }: ConversationCardProps) {
   return (
     <Card
-      className={`p-4 cursor-pointer transition-colors hover:bg-accent/50 ${
+      className={`p-5 cursor-pointer transition-all hover:bg-accent/50 active:scale-[0.98] ${
         isSelected ? "bg-accent" : ""
       }`}
       onClick={onClick}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-4">
         <div className="flex-shrink-0">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <MessageSquare className="h-5 w-5 text-primary" />
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <MessageSquare className="h-6 w-6 text-primary" />
           </div>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <p className="font-semibold text-sm truncate">
+            <p className="font-semibold text-base truncate">
               {maskPhoneNumber(phoneNumber)}
             </p>
             <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
