@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
 import { ConversationCard } from "@/components/inbox/ConversationCard";
 import { MessageBubble } from "@/components/inbox/MessageBubble";
+import { MobileHeader } from "@/components/inbox/MobileHeader";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Inbox as InboxIcon, MessageSquare } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Message {
   id: string;
@@ -27,6 +29,9 @@ interface Conversation {
 
 export default function Inbox() {
   const [selectedPhone, setSelectedPhone] = useState<string | null>(null);
+  const [showMessages, setShowMessages] = useState(false);
+  const isMobile = useIsMobile();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data: messages = [], refetch } = useQuery({
     queryKey: ["sms-messages"],
@@ -97,12 +102,35 @@ export default function Inbox() {
       ) || []
     : [];
 
-  // Auto-select first conversation
+  // Auto-select first conversation (desktop only)
   useEffect(() => {
-    if (conversations.length > 0 && !selectedPhone) {
+    if (conversations.length > 0 && !selectedPhone && !isMobile) {
       setSelectedPhone(conversations[0].phoneNumber);
     }
-  }, [conversations, selectedPhone]);
+  }, [conversations, selectedPhone, isMobile]);
+
+  // Auto-scroll to latest message on mobile
+  useEffect(() => {
+    if (isMobile && showMessages && scrollRef.current) {
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({
+          top: scrollRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+      }, 100);
+    }
+  }, [isMobile, showMessages, selectedMessages]);
+
+  const handleConversationSelect = (phoneNumber: string) => {
+    setSelectedPhone(phoneNumber);
+    if (isMobile) {
+      setShowMessages(true);
+    }
+  };
+
+  const handleBackToList = () => {
+    setShowMessages(false);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -127,58 +155,116 @@ export default function Inbox() {
             </p>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Conversations List */}
-            <div className="lg:col-span-1">
-              <Card className="p-4">
-                <h2 className="font-semibold mb-4">Conversations</h2>
-                <ScrollArea className="h-[600px]">
-                  <div className="space-y-2">
-                    {conversations.map((conversation) => (
-                      <ConversationCard
-                        key={conversation.phoneNumber}
-                        phoneNumber={conversation.phoneNumber}
-                        latestMessage={conversation.latestMessage}
-                        timestamp={conversation.latestTimestamp}
-                        messageCount={conversation.messageCount}
-                        isSelected={selectedPhone === conversation.phoneNumber}
-                        onClick={() => setSelectedPhone(conversation.phoneNumber)}
-                      />
-                    ))}
-                  </div>
-                </ScrollArea>
-              </Card>
-            </div>
+          <>
+            {/* Mobile: Show conversations OR messages */}
+            {isMobile ? (
+              <>
+                {/* Conversations List (mobile) */}
+                {!showMessages && (
+                  <Card className="p-4">
+                    <h2 className="font-semibold mb-4">Conversations</h2>
+                    <ScrollArea className="h-[calc(100vh-240px)]">
+                      <div className="space-y-2">
+                        {conversations.map((conversation) => (
+                          <ConversationCard
+                            key={conversation.phoneNumber}
+                            phoneNumber={conversation.phoneNumber}
+                            latestMessage={conversation.latestMessage}
+                            timestamp={conversation.latestTimestamp}
+                            messageCount={conversation.messageCount}
+                            isSelected={false}
+                            onClick={() => handleConversationSelect(conversation.phoneNumber)}
+                          />
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </Card>
+                )}
 
-            {/* Message Thread */}
-            <div className="lg:col-span-2">
-              <Card className="p-4">
-                <div className="border-b pb-4 mb-4">
-                  <h2 className="font-semibold">
-                    {selectedPhone ? `Conversation with ${selectedPhone}` : "Select a conversation"}
-                  </h2>
+                {/* Message Thread (mobile) */}
+                {showMessages && selectedPhone && (
+                  <Card className="p-0 overflow-hidden">
+                    <MobileHeader 
+                      phoneNumber={selectedPhone} 
+                      onBack={handleBackToList}
+                    />
+                    <ScrollArea className="h-[calc(100vh-240px)] p-4" ref={scrollRef}>
+                      {selectedMessages.length > 0 ? (
+                        <div className="space-y-2">
+                          {selectedMessages.map((msg) => (
+                            <MessageBubble
+                              key={msg.id}
+                              message={msg.message_body}
+                              direction={msg.direction}
+                              timestamp={msg.created_at}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center text-muted-foreground py-8">
+                          No messages in this conversation
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </Card>
+                )}
+              </>
+            ) : (
+              /* Desktop: Show both panels side by side */
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Conversations List */}
+                <div className="lg:col-span-1">
+                  <Card className="p-4">
+                    <h2 className="font-semibold mb-4">Conversations</h2>
+                    <ScrollArea className="h-[600px]">
+                      <div className="space-y-2">
+                        {conversations.map((conversation) => (
+                          <ConversationCard
+                            key={conversation.phoneNumber}
+                            phoneNumber={conversation.phoneNumber}
+                            latestMessage={conversation.latestMessage}
+                            timestamp={conversation.latestTimestamp}
+                            messageCount={conversation.messageCount}
+                            isSelected={selectedPhone === conversation.phoneNumber}
+                            onClick={() => handleConversationSelect(conversation.phoneNumber)}
+                          />
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </Card>
                 </div>
-                <ScrollArea className="h-[600px] pr-4">
-                  {selectedMessages.length > 0 ? (
-                    <div className="space-y-2">
-                      {selectedMessages.map((msg) => (
-                        <MessageBubble
-                          key={msg.id}
-                          message={msg.message_body}
-                          direction={msg.direction}
-                          timestamp={msg.created_at}
-                        />
-                      ))}
+
+                {/* Message Thread */}
+                <div className="lg:col-span-2">
+                  <Card className="p-4">
+                    <div className="border-b pb-4 mb-4">
+                      <h2 className="font-semibold">
+                        {selectedPhone ? `Conversation with ${selectedPhone}` : "Select a conversation"}
+                      </h2>
                     </div>
-                  ) : (
-                    <div className="text-center text-muted-foreground py-8">
-                      No messages in this conversation
-                    </div>
-                  )}
-                </ScrollArea>
-              </Card>
-            </div>
-          </div>
+                    <ScrollArea className="h-[600px] pr-4">
+                      {selectedMessages.length > 0 ? (
+                        <div className="space-y-2">
+                          {selectedMessages.map((msg) => (
+                            <MessageBubble
+                              key={msg.id}
+                              message={msg.message_body}
+                              direction={msg.direction}
+                              timestamp={msg.created_at}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center text-muted-foreground py-8">
+                          No messages in this conversation
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </Card>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>
