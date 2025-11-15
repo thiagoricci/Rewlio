@@ -29,7 +29,7 @@ const Index = () => {
       <header className="container mx-auto px-4 py-6 flex justify-between items-center border-b">
         <div className="flex items-center space-x-2">
           <MessageSquare className="h-6 w-6 text-primary" />
-          <span className="font-semibold text-lg">SMS Collector</span>
+          <span className="font-semibold text-lg">Meslio</span>
         </div>
         <div className="flex space-x-4">
           {user ? (
@@ -58,13 +58,13 @@ const Index = () => {
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-6">
             <MessageSquare className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Retell AI Integration</span>
+            <span className="text-sm font-medium text-primary">Message + Flow</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">
-            SMS Information Collection
+            Meslio
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            Seamlessly collect hard-to-spell information from voice calls via SMS. 
+            A smooth, intelligent way to handle messages. Seamlessly collect information from voice calls via SMS.
             Perfect for email addresses, physical addresses, and account numbers.
           </p>
           <div className="flex gap-4 justify-center">
