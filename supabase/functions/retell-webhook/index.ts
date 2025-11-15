@@ -5,11 +5,27 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface RequestBody {
+// Test page payload structure
+interface TestPagePayload {
   call_id: string;
   caller_number: string;
-  info_type: 'email' | 'address' | 'account_number';
+  info_type: string;
   message: string;
+}
+
+// Retell AI payload structure
+interface RetellPayload {
+  call: {
+    call_id: string;
+    from_number: string;
+    [key: string]: any;
+  };
+  name: string;
+  args: {
+    message: string;
+    info_type?: string;
+    [key: string]: any;
+  };
 }
 
 function generateRequestId(): string {
@@ -63,11 +79,37 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    const body: RequestBody = await req.json();
-    console.log('Received request:', body);
+    const body = await req.json();
+    console.log('Received request:', JSON.stringify(body, null, 2));
 
-    // Validate request
-    if (!body.call_id || !body.caller_number || !body.info_type || !body.message) {
+    // Detect payload structure and extract data
+    const isRetellPayload = body.call !== undefined;
+    
+    let call_id: string;
+    let caller_number: string;
+    let message: string;
+    let info_type: string;
+
+    if (isRetellPayload) {
+      // Retell AI payload structure
+      const retellBody = body as RetellPayload;
+      call_id = retellBody.call.call_id;
+      caller_number = retellBody.call.from_number;
+      message = retellBody.args.message;
+      info_type = retellBody.args.info_type || 'general';
+      console.log('Parsed Retell payload:', { call_id, caller_number, message, info_type });
+    } else {
+      // Test page payload structure
+      const testBody = body as TestPagePayload;
+      call_id = testBody.call_id;
+      caller_number = testBody.caller_number;
+      message = testBody.message;
+      info_type = testBody.info_type;
+      console.log('Parsed Test page payload:', { call_id, caller_number, message, info_type });
+    }
+
+    // Validate required fields
+    if (!call_id || !caller_number || !message) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -83,10 +125,10 @@ Deno.serve(async (req) => {
       .from('info_requests')
       .insert({
         request_id: requestId,
-        call_id: body.call_id,
-        info_type: body.info_type,
-        recipient_phone: body.caller_number,
-        prompt_message: body.message,
+        call_id: call_id,
+        info_type: info_type,
+        recipient_phone: caller_number,
+        prompt_message: message,
         expires_at: expiresAt.toISOString(),
         status: 'pending'
       })
@@ -103,7 +145,7 @@ Deno.serve(async (req) => {
 
     // Send SMS with the exact message from the AI agent
     try {
-      await sendSMS(body.caller_number, body.message);
+      await sendSMS(caller_number, message);
     } catch (smsError) {
       console.error('SMS error:', smsError);
       // Mark request as failed but don't fail the whole request

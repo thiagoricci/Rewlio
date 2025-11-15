@@ -72,7 +72,7 @@ export function validateAccountNumber(accountNumber: string): ValidationResult {
   };
 }
 
-export function validate(value: string, type: ValidationType): ValidationResult {
+export function validate(value: string, type: string): ValidationResult {
   switch (type) {
     case 'email':
       return validateEmail(value);
@@ -81,9 +81,23 @@ export function validate(value: string, type: ValidationType): ValidationResult 
     case 'account_number':
       return validateAccountNumber(value);
     default:
+      // Custom type from AI agent - apply basic validation
+      const trimmed = value.trim();
+      if (trimmed.length === 0) {
+        return {
+          valid: false,
+          error: 'Please provide a valid response'
+        };
+      }
+      if (trimmed.length > 500) {
+        return {
+          valid: false,
+          error: 'Response is too long (max 500 characters)'
+        };
+      }
       return {
-        valid: false,
-        error: 'Unknown validation type'
+        valid: true,
+        normalized: trimmed
       };
   }
 }
