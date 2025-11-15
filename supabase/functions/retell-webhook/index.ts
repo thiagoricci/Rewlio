@@ -39,7 +39,7 @@ function generateRequestId(): string {
   return result;
 }
 
-async function sendSMS(to: string, message: string, accountSid: string, authToken: string, fromNumber: string): Promise<void> {
+async function sendSMS(to: string, message: string, accountSid: string, authToken: string, fromNumber: string): Promise<string> {
   const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
   
   const formData = new URLSearchParams();
@@ -62,7 +62,9 @@ async function sendSMS(to: string, message: string, accountSid: string, authToke
     throw new Error(`Failed to send SMS: ${error}`);
   }
 
-  console.log('SMS sent successfully to', to);
+  const responseData = await response.json();
+  console.log('SMS sent successfully to', to, 'with SID:', responseData.sid);
+  return responseData.sid;
 }
 
 
@@ -167,8 +169,9 @@ Deno.serve(async (req) => {
     }
 
     // Send SMS with the exact message from the AI agent
+    let twilioMessageSid: string;
     try {
-      await sendSMS(
+      twilioMessageSid = await sendSMS(
         caller_number, 
         message, 
         credentials.twilio_account_sid,
@@ -187,6 +190,23 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: 'Failed to send SMS', details: String(smsError) }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Log the outbound message to sms_messages table for inbox display
+    const { error: logError } = await supabase
+      .from('sms_messages')
+      .insert({
+        user_id: user_id,
+        phone_number: caller_number,
+        message_body: message,
+        direction: 'outbound',
+        request_id: requestId,
+        twilio_message_sid: twilioMessageSid
+      });
+
+    if (logError) {
+      console.error('Error logging outbound request message:', logError);
+      // Don't fail the request, just log the error
     }
 
     console.log('Request created successfully:', requestId);
