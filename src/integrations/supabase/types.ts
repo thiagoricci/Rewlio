@@ -20,7 +20,7 @@ export type Database = {
           created_at: string
           expires_at: string
           id: string
-          info_type: Database["public"]["Enums"]["info_type"]
+          info_type: string
           prompt_message: string | null
           received_at: string | null
           received_value: string | null
@@ -33,7 +33,7 @@ export type Database = {
           created_at?: string
           expires_at: string
           id?: string
-          info_type: Database["public"]["Enums"]["info_type"]
+          info_type: string
           prompt_message?: string | null
           received_at?: string | null
           received_value?: string | null
@@ -46,7 +46,7 @@ export type Database = {
           created_at?: string
           expires_at?: string
           id?: string
-          info_type?: Database["public"]["Enums"]["info_type"]
+          info_type?: string
           prompt_message?: string | null
           received_at?: string | null
           received_value?: string | null
@@ -64,7 +64,6 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      info_type: "email" | "address" | "account_number"
       request_status: "pending" | "completed" | "expired" | "invalid"
     }
     CompositeTypes: {
@@ -193,7 +192,6 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      info_type: ["email", "address", "account_number"],
       request_status: ["pending", "completed", "expired", "invalid"],
     },
   },
