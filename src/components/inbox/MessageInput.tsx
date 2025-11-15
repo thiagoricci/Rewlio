@@ -86,14 +86,14 @@ export function MessageInput({ phoneNumber, onMessageSent }: MessageInputProps) 
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={handleKeyPress}
           disabled={isSending}
-          className="min-h-[60px] max-h-[120px] resize-none"
+          className="min-h-[44px] max-h-[100px] resize-none"
           maxLength={1600}
         />
         <Button
           onClick={handleSend}
           disabled={isSending || !message.trim()}
           size="icon"
-          className="h-[60px] w-[60px] shrink-0"
+          className="h-[44px] w-[44px] shrink-0"
         >
           {isSending ? (
             <Loader2 className="h-5 w-5 animate-spin" />

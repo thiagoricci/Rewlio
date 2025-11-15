@@ -36,7 +36,7 @@ export function ConversationCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
             <p className="font-semibold text-base truncate">
-              {maskPhoneNumber(phoneNumber)}
+              {phoneNumber}
             </p>
             <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
               {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}
