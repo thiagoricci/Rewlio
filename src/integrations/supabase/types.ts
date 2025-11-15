@@ -27,6 +27,7 @@ export type Database = {
           recipient_phone: string
           request_id: string
           status: Database["public"]["Enums"]["request_status"]
+          user_id: string | null
         }
         Insert: {
           call_id: string
@@ -40,6 +41,7 @@ export type Database = {
           recipient_phone: string
           request_id: string
           status?: Database["public"]["Enums"]["request_status"]
+          user_id?: string | null
         }
         Update: {
           call_id?: string
@@ -53,6 +55,37 @@ export type Database = {
           recipient_phone?: string
           request_id?: string
           status?: Database["public"]["Enums"]["request_status"]
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_credentials: {
+        Row: {
+          created_at: string
+          id: string
+          twilio_account_sid: string
+          twilio_auth_token: string
+          twilio_phone_number: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          twilio_account_sid: string
+          twilio_auth_token: string
+          twilio_phone_number: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          twilio_account_sid?: string
+          twilio_auth_token?: string
+          twilio_phone_number?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
