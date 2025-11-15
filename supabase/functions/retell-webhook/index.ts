@@ -11,6 +11,7 @@ interface TestPagePayload {
   caller_number: string;
   info_type: string;
   message: string;
+  user_id: string;
 }
 
 // Retell AI payload structure
@@ -24,6 +25,7 @@ interface RetellPayload {
   args: {
     message: string;
     info_type?: string;
+    user_id: string;
     [key: string]: any;
   };
 }
@@ -37,16 +39,12 @@ function generateRequestId(): string {
   return result;
 }
 
-async function sendSMS(to: string, message: string): Promise<void> {
-  const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
-  const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-  const fromNumber = Deno.env.get('TWILIO_PHONE_NUMBER');
-
+async function sendSMS(to: string, message: string, accountSid: string, authToken: string, fromNumber: string): Promise<void> {
   const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
   
   const formData = new URLSearchParams();
   formData.append('To', to);
-  formData.append('From', fromNumber!);
+  formData.append('From', fromNumber);
   formData.append('Body', message);
 
   const response = await fetch(url, {
@@ -89,6 +87,7 @@ Deno.serve(async (req) => {
     let caller_number: string;
     let message: string;
     let info_type: string;
+    let user_id: string;
 
     if (isRetellPayload) {
       // Retell AI payload structure
@@ -97,7 +96,8 @@ Deno.serve(async (req) => {
       caller_number = retellBody.call.from_number;
       message = retellBody.args.message;
       info_type = retellBody.args.info_type || 'general';
-      console.log('Parsed Retell payload:', { call_id, caller_number, message, info_type });
+      user_id = retellBody.args.user_id;
+      console.log('Parsed Retell payload:', { call_id, caller_number, message, info_type, user_id });
     } else {
       // Test page payload structure
       const testBody = body as TestPagePayload;
@@ -105,13 +105,29 @@ Deno.serve(async (req) => {
       caller_number = testBody.caller_number;
       message = testBody.message;
       info_type = testBody.info_type;
-      console.log('Parsed Test page payload:', { call_id, caller_number, message, info_type });
+      user_id = testBody.user_id;
+      console.log('Parsed Test page payload:', { call_id, caller_number, message, info_type, user_id });
     }
 
     // Validate required fields
-    if (!call_id || !caller_number || !message) {
+    if (!call_id || !caller_number || !message || !user_id) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
+        JSON.stringify({ error: 'Missing required fields: call_id, caller_number, message, and user_id are required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Fetch user's Twilio credentials
+    const { data: credentials, error: credError } = await supabase
+      .from('user_credentials')
+      .select('twilio_account_sid, twilio_auth_token, twilio_phone_number')
+      .eq('user_id', user_id)
+      .single();
+
+    if (credError || !credentials) {
+      console.error('Error fetching user credentials:', credError);
+      return new Response(
+        JSON.stringify({ error: 'User Twilio credentials not found. Please configure them in Settings.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -130,7 +146,8 @@ Deno.serve(async (req) => {
         recipient_phone: caller_number,
         prompt_message: message,
         expires_at: expiresAt.toISOString(),
-        status: 'pending'
+        status: 'pending',
+        user_id: user_id
       })
       .select()
       .single();
@@ -145,7 +162,13 @@ Deno.serve(async (req) => {
 
     // Send SMS with the exact message from the AI agent
     try {
-      await sendSMS(caller_number, message);
+      await sendSMS(
+        caller_number, 
+        message, 
+        credentials.twilio_account_sid,
+        credentials.twilio_auth_token,
+        credentials.twilio_phone_number
+      );
     } catch (smsError) {
       console.error('SMS error:', smsError);
       // Mark request as failed but don't fail the whole request
