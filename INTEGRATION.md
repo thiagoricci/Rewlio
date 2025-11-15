@@ -90,7 +90,15 @@ Each user must configure their own Twilio credentials:
 
 ## Retell AI Setup
 
-### 1. Configure Function in Retell Dashboard
+After configuring your Twilio credentials in the app Settings:
+
+1. **Get your unique webhook URL**:
+   - Go to Settings page in the application
+   - After saving your Twilio credentials, scroll down to the "Retell AI Webhook Configuration" section
+   - Copy your unique webhook URL (format: `https://[project].supabase.co/functions/v1/retell-webhook/[your-user-id]`)
+   - This URL is unique to your account and automatically uses your configured Twilio credentials
+
+2. **Configure Function in Retell Dashboard**
 
 Add this function definition:
 
@@ -101,35 +109,37 @@ Add this function definition:
   "parameters": {
     "type": "object",
     "properties": {
+      "message": {
+        "type": "string",
+        "description": "The exact SMS message to send to the caller"
+      },
       "info_type": {
         "type": "string",
         "enum": ["email", "address", "account_number"],
         "description": "Type of information to collect"
-      },
-      "user_id": {
-        "type": "string",
-        "description": "Authenticated user ID (required for multi-tenant support)"
       }
     },
-    "required": ["info_type", "user_id"]
+    "required": ["message", "info_type"]
   }
 }
 ```
 
-### 2. Set Webhook URL
+**Note:** The `user_id` is automatically extracted from your unique webhook URL, so you don't need to include it in the function parameters.
 
-Configure your function webhook endpoint:
+3. **Set Webhook URL**
+
+Configure your function webhook endpoint with your unique URL from Settings:
 ```
-https://kqzsgqqwnthclrlcfkgs.supabase.co/functions/v1/retell-webhook
+https://kqzsgqqwnthclrlcfkgs.supabase.co/functions/v1/retell-webhook/[your-user-id]
 ```
 
-### 3. Update Agent Prompt
+4. **Update Agent Prompt**
 
 Example agent instruction:
 
 ```
 When the customer needs to provide their email address, physical address, 
-or account number, use the collect_info_via_sms function with your user_id.
+or account number, use the collect_info_via_sms function.
 
 Say: "To make sure I get that exactly right, I'll send you a quick text. 
 Just reply with your {info_type} and we'll continue."
@@ -138,22 +148,40 @@ Once you receive the information, confirm it:
 "Perfect, I've got {value}. Let's continue..."
 ```
 
-**Note:** The user_id should be passed from your authentication system to identify which Twilio account to use.
-
 ## API Endpoints
 
-### POST /functions/v1/retell-webhook
+### POST /functions/v1/retell-webhook/{user_id}
 
-**Authentication:** Requires valid session token in Authorization header
+**URL Format:** Each user has a unique webhook URL that includes their user ID:
+```
+https://kqzsgqqwnthclrlcfkgs.supabase.co/functions/v1/retell-webhook/{user_id}
+```
 
-**Request Body:**
+**Authentication:** The user_id in the URL path identifies which user's Twilio credentials to use
+
+**Request Body (from Retell AI):**
+```json
+{
+  "call": {
+    "call_id": "call_abc123",
+    "from_number": "+12345678901"
+  },
+  "name": "collect_info_via_sms",
+  "args": {
+    "message": "Please reply with your email address",
+    "info_type": "email"
+  }
+}
+```
+
+**Request Body (from Test Page):**
 ```json
 {
   "call_id": "string",
   "caller_number": "+12345678901",
   "info_type": "email",
-  "user_id": "uuid-string",
-  "message": "optional custom message"
+  "message": "optional custom message",
+  "user_id": "uuid-string"
 }
 ```
 
@@ -291,6 +319,7 @@ The application includes a test page at `/test` to verify your setup:
 
 2. **Steps:**
    - Navigate to `/test`
+   - The page will automatically use your user ID from the logged-in session
    - Enter a test call ID
    - Enter your phone number (E.164 format)
    - Select info type (email, address, or account_number)
@@ -304,19 +333,22 @@ The application includes a test page at `/test` to verify your setup:
 
 ### Manual API Test
 
-Test the retell-webhook function with authentication:
+Test the retell-webhook function with your unique webhook URL:
 ```bash
-# First, get your session token by logging into the app
-# Then use it in the Authorization header
+# Replace [your-user-id] with your actual user ID from Settings
 
-curl -X POST https://kqzsgqqwnthclrlcfkgs.supabase.co/functions/v1/retell-webhook \
+curl -X POST https://kqzsgqqwnthclrlcfkgs.supabase.co/functions/v1/retell-webhook/[your-user-id] \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_SESSION_TOKEN" \
   -d '{
-    "call_id": "test-call-123",
-    "caller_number": "+1234567890",
-    "info_type": "email",
-    "user_id": "your-user-id"
+    "call": {
+      "call_id": "test-call-123",
+      "from_number": "+12345678901"
+    },
+    "name": "collect_info_via_sms",
+    "args": {
+      "message": "Please reply with your email address",
+      "info_type": "email"
+    }
   }'
 ```
 

@@ -77,6 +77,11 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
+    // Extract user_id from URL path (e.g., /retell-webhook/user-id-here)
+    const url = new URL(req.url);
+    const pathParts = url.pathname.split('/');
+    const userIdFromPath = pathParts[pathParts.length - 1];
+    
     const body = await req.json();
     console.log('Received request:', JSON.stringify(body, null, 2));
 
@@ -96,10 +101,11 @@ Deno.serve(async (req) => {
       caller_number = retellBody.call.from_number;
       message = retellBody.args.message;
       info_type = retellBody.args.info_type || 'general';
-      user_id = retellBody.args.user_id;
-      console.log('Parsed Retell payload:', { call_id, caller_number, message, info_type, user_id });
+      // Use user_id from URL path for Retell payloads
+      user_id = userIdFromPath && userIdFromPath !== 'retell-webhook' ? userIdFromPath : retellBody.args.user_id;
+      console.log('Parsed Retell payload:', { call_id, caller_number, message, info_type, user_id, userIdFromPath });
     } else {
-      // Test page payload structure
+      // Test page payload structure - use user_id from body
       const testBody = body as TestPagePayload;
       call_id = testBody.call_id;
       caller_number = testBody.caller_number;
