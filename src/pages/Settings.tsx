@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Info } from "lucide-react";
+import { Loader2, Info, Copy, Check } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Navigation from "@/components/Navigation";
 import { isValidE164 } from "@/lib/phone-utils";
@@ -18,6 +18,8 @@ const Settings = () => {
   const [authToken, setAuthToken] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [hasCredentials, setHasCredentials] = useState(false);
+  const [userId, setUserId] = useState("");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     fetchCredentials();
@@ -28,6 +30,8 @@ const Settings = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+
+      setUserId(user.id);
 
       const { data, error } = await supabase
         .from("user_credentials")
@@ -112,6 +116,17 @@ const Settings = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const copyWebhookUrl = async () => {
+    const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/retell-webhook/${userId}`;
+    await navigator.clipboard.writeText(webhookUrl);
+    setCopied(true);
+    toast({
+      title: "Copied!",
+      description: "Webhook URL copied to clipboard",
+    });
+    setTimeout(() => setCopied(false), 2000);
   };
 
   if (fetching) {
@@ -212,10 +227,50 @@ const Settings = () => {
                   "Save Credentials"
                 )}
               </Button>
-            </form>
+          </form>
+        </CardContent>
+      </Card>
+
+      {hasCredentials && (
+        <Card className="max-w-2xl mx-auto mt-6">
+          <CardHeader>
+            <CardTitle>Retell AI Webhook Configuration</CardTitle>
+            <CardDescription>
+              Use this webhook URL in your Retell AI agent settings to enable SMS collection
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="webhook-url">Webhook URL</Label>
+                <div className="flex gap-2 mt-2">
+                  <Input
+                    id="webhook-url"
+                    value={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/retell-webhook/${userId}`}
+                    readOnly
+                    className="font-mono text-sm"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={copyWebhookUrl}
+                  >
+                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  Configure this URL in your Retell AI agent's function settings. This URL is unique to your account and uses your configured Twilio credentials.
+                </AlertDescription>
+              </Alert>
+            </div>
           </CardContent>
         </Card>
-      </div>
+      )}
+    </div>
     </>
   );
 };
