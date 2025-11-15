@@ -179,6 +179,23 @@ Deno.serve(async (req) => {
     const request = requests[0];
     console.log('Found request:', request.request_id);
 
+    // Log the incoming message to sms_messages table
+    const messageSid = formData.get('MessageSid') as string;
+    const { error: logError } = await supabase
+      .from('sms_messages')
+      .insert({
+        user_id: credentials.user_id,
+        phone_number: from,
+        message_body: body,
+        direction: 'inbound',
+        twilio_message_sid: messageSid,
+        request_id: request.request_id
+      });
+
+    if (logError) {
+      console.error('Error logging inbound message:', logError);
+    }
+
     // Validate the response
     const validation = validate(body, request.info_type);
 
@@ -215,6 +232,21 @@ Please reply again with the correct information.`;
           credentials.twilio_auth_token,
           credentials.twilio_phone_number
         );
+
+        // Log the outbound error message
+        const { error: outboundLogError } = await supabase
+          .from('sms_messages')
+          .insert({
+            user_id: credentials.user_id,
+            phone_number: from,
+            message_body: errorMessage,
+            direction: 'outbound',
+            request_id: request.request_id
+          });
+
+        if (outboundLogError) {
+          console.error('Error logging outbound message:', outboundLogError);
+        }
       } catch (smsError) {
         console.error('Failed to send error SMS:', smsError);
       }

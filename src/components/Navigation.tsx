@@ -63,6 +63,13 @@ const Navigation = () => {
                   Dashboard
                 </Button>
               </Link>
+              <Link to="/inbox">
+                <Button
+                  variant={location.pathname === "/inbox" ? "default" : "ghost"}
+                >
+                  Inbox
+                </Button>
+              </Link>
               <Link to="/test">
                 <Button
                   variant={location.pathname === "/test" ? "default" : "ghost"}
