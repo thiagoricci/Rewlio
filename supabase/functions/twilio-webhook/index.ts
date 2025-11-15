@@ -158,7 +158,26 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Find pending request for this phone number and user
+    // ALWAYS log the incoming message first (regardless of pending request)
+    const messageSid = formData.get('MessageSid') as string;
+    const { error: logError } = await supabase
+      .from('sms_messages')
+      .insert({
+        user_id: credentials.user_id,
+        phone_number: from,
+        message_body: body,
+        direction: 'inbound',
+        twilio_message_sid: messageSid,
+        request_id: null  // Will be updated if there's a matching request
+      });
+
+    if (logError) {
+      console.error('Error logging inbound message:', logError);
+    }
+
+    console.log('Incoming message saved to database');
+
+    // Then check if this is a reply to a pending request
     const { data: requests, error: findError } = await supabase
       .from('info_requests')
       .select('*')
@@ -169,7 +188,7 @@ Deno.serve(async (req) => {
       .limit(1);
 
     if (findError || !requests || requests.length === 0) {
-      console.log('No pending request found for:', from);
+      console.log('No pending request found for:', from, '- message saved as general inbound');
       return new Response(
         '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
         { status: 200, headers: { 'Content-Type': 'text/xml' } }
@@ -177,23 +196,16 @@ Deno.serve(async (req) => {
     }
 
     const request = requests[0];
-    console.log('Found request:', request.request_id);
+    console.log('Found pending request:', request.request_id);
 
-    // Log the incoming message to sms_messages table
-    const messageSid = formData.get('MessageSid') as string;
-    const { error: logError } = await supabase
+    // Update the message with the request_id
+    const { error: updateError } = await supabase
       .from('sms_messages')
-      .insert({
-        user_id: credentials.user_id,
-        phone_number: from,
-        message_body: body,
-        direction: 'inbound',
-        twilio_message_sid: messageSid,
-        request_id: request.request_id
-      });
+      .update({ request_id: request.request_id })
+      .eq('twilio_message_sid', messageSid);
 
-    if (logError) {
-      console.error('Error logging inbound message:', logError);
+    if (updateError) {
+      console.error('Error updating message with request_id:', updateError);
     }
 
     // Validate the response
