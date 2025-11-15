@@ -118,14 +118,6 @@ async function sendSMS(to: string, message: string): Promise<void> {
   }
 }
 
-function getInfoTypeLabel(infoType: string): string {
-  switch (infoType) {
-    case 'email': return 'email address';
-    case 'address': return 'full address';
-    case 'account_number': return 'account number';
-    default: return 'information';
-  }
-}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -192,20 +184,6 @@ Deno.serve(async (req) => {
         console.error('Error updating request:', updateError);
       } else {
         console.log('Request completed successfully');
-        
-        // Send confirmation SMS
-        const label = getInfoTypeLabel(request.info_type);
-        const confirmationMessage = `✓ Got it!
-
-Your ${label}: ${validation.normalized}
-
-Continuing with your call...`;
-        
-        try {
-          await sendSMS(from, confirmationMessage);
-        } catch (smsError) {
-          console.error('Failed to send confirmation SMS:', smsError);
-        }
       }
     } else {
       // Send error SMS

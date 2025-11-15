@@ -9,7 +9,7 @@ interface RequestBody {
   call_id: string;
   caller_number: string;
   info_type: 'email' | 'address' | 'account_number';
-  prompt_message?: string;
+  message: string;
 }
 
 function generateRequestId(): string {
@@ -51,23 +51,6 @@ async function sendSMS(to: string, message: string): Promise<void> {
   console.log('SMS sent successfully to', to);
 }
 
-function getInfoTypeLabel(infoType: string): string {
-  switch (infoType) {
-    case 'email': return 'email address';
-    case 'address': return 'full address';
-    case 'account_number': return 'account number';
-    default: return 'information';
-  }
-}
-
-function getInfoTypeExample(infoType: string): string {
-  switch (infoType) {
-    case 'email': return 'john.smith@email.com';
-    case 'address': return '123 Main St, Springfield, IL 62701';
-    case 'account_number': return '1234567890';
-    default: return '';
-  }
-}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -84,7 +67,7 @@ Deno.serve(async (req) => {
     console.log('Received request:', body);
 
     // Validate request
-    if (!body.call_id || !body.caller_number || !body.info_type) {
+    if (!body.call_id || !body.caller_number || !body.info_type || !body.message) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -103,7 +86,7 @@ Deno.serve(async (req) => {
         call_id: body.call_id,
         info_type: body.info_type,
         recipient_phone: body.caller_number,
-        prompt_message: body.prompt_message,
+        prompt_message: body.message,
         expires_at: expiresAt.toISOString(),
         status: 'pending'
       })
@@ -118,17 +101,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Send SMS
-    const label = getInfoTypeLabel(body.info_type);
-    const example = getInfoTypeExample(body.info_type);
-    const smsMessage = `Hi! To continue with your call, please reply with your ${label}.
-
-Example: ${example}
-
-Request ID: ${requestId}`;
-
+    // Send SMS with the exact message from the AI agent
     try {
-      await sendSMS(body.caller_number, smsMessage);
+      await sendSMS(body.caller_number, body.message);
     } catch (smsError) {
       console.error('SMS error:', smsError);
       // Mark request as failed but don't fail the whole request
