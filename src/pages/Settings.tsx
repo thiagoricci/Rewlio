@@ -5,7 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Info, Copy, Check } from "lucide-react";
+import { Loader2, Info, Copy, Check, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Navigation from "@/components/Navigation";
 import { isValidE164 } from "@/lib/phone-utils";
@@ -20,6 +30,8 @@ const Settings = () => {
   const [hasCredentials, setHasCredentials] = useState(false);
   const [userId, setUserId] = useState("");
   const [copied, setCopied] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchCredentials();
@@ -129,6 +141,41 @@ const Settings = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleRemoveCredentials = async () => {
+    setDeleting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from("user_credentials")
+        .delete()
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      // Clear form fields
+      setAccountSid("");
+      setAuthToken("");
+      setPhoneNumber("");
+      setHasCredentials(false);
+      setShowDeleteDialog(false);
+
+      toast({
+        title: "Credentials removed",
+        description: "Your Twilio credentials have been removed successfully",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error removing credentials",
+        description: error.message,
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (fetching) {
     return (
       <>
@@ -217,16 +264,29 @@ const Settings = () => {
                 </p>
               </div>
 
-              <Button type="submit" disabled={loading} className="w-full">
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  "Save Credentials"
+              <div className="flex gap-2">
+                <Button type="submit" disabled={loading} className="flex-1">
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Credentials"
+                  )}
+                </Button>
+                
+                {hasCredentials && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() => setShowDeleteDialog(true)}
+                    disabled={loading || deleting}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 )}
-              </Button>
+              </div>
           </form>
         </CardContent>
       </Card>
@@ -271,6 +331,35 @@ const Settings = () => {
         </Card>
       )}
     </div>
+
+    <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Remove Twilio Credentials?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will permanently delete your saved Twilio credentials. You'll need to reconfigure them to use the SMS collection system again.
+            This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleRemoveCredentials}
+            disabled={deleting}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {deleting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Removing...
+              </>
+            ) : (
+              "Remove Credentials"
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     </>
   );
 };
