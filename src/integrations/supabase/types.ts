@@ -20,7 +20,6 @@ export type Database = {
           created_at: string
           expires_at: string
           id: string
-          info_type: string
           prompt_message: string | null
           received_at: string | null
           received_value: string | null
@@ -34,7 +33,6 @@ export type Database = {
           created_at?: string
           expires_at: string
           id?: string
-          info_type: string
           prompt_message?: string | null
           received_at?: string | null
           received_value?: string | null
@@ -48,7 +46,6 @@ export type Database = {
           created_at?: string
           expires_at?: string
           id?: string
-          info_type?: string
           prompt_message?: string | null
           received_at?: string | null
           received_value?: string | null

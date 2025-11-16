@@ -6,7 +6,6 @@ interface InfoRequest {
   id: string;
   request_id: string;
   call_id: string;
-  info_type: string;
   recipient_phone: string;
   status: 'pending' | 'completed' | 'expired' | 'invalid';
   received_value?: string;
@@ -18,7 +17,7 @@ interface InfoRequest {
 interface InfoRequestListProps {
   requests: InfoRequest[];
   isLoading?: boolean;
-  onDelete?: (id: string, request_id: string, info_type: string) => void;
+  onDelete?: (id: string, request_id: string) => void;
 }
 
 export function InfoRequestList({ requests, isLoading, onDelete }: InfoRequestListProps) {
@@ -56,7 +55,6 @@ export function InfoRequestList({ requests, isLoading, onDelete }: InfoRequestLi
               <TableRow>
                 <TableHead>Request ID</TableHead>
                 <TableHead>Phone</TableHead>
-                <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Value</TableHead>
                 <TableHead>Created</TableHead>
