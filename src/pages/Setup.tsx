@@ -53,22 +53,20 @@ const Setup = () => {
     : "";
 
   const retellFunctionJson = `{
-            "name": "contact_human",
-            "description": "Send SMS to collect information or contact the human caller",
-  "parameters": {
-    "type": "object",
-    "properties": {
-      "message": {
-        "type": "string",
-        "description": "The exact SMS message to send to the caller"
-      },
-      "info_type": {
-        "type": "string",
-        "enum": ["email", "address", "account_number"],
-        "description": "Type of information to collect"
-      }
+  "type": "object",
+  "required": [
+    "message",
+    "info_type"
+  ],
+  "properties": {
+    "message": {
+      "type": "string",
+      "description": "This is the information requested for the user"
     },
-    "required": ["message", "info_type"]
+    "info_type": {
+      "type": "string",
+      "description": "This is the type of information requested, example: email, full name, address or other"
+    }
   }
 }`;
 
