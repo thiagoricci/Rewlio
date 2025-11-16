@@ -4,7 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Info, Copy, ExternalLink } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { CheckCircle, Info, Copy, ExternalLink, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
@@ -14,6 +16,7 @@ const Setup = () => {
   const { toast } = useToast();
   const [userId, setUserId] = useState<string>("");
   const [hasCredentials, setHasCredentials] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -36,16 +39,18 @@ const Setup = () => {
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
+    setCopied(true);
     toast({
       title: "Copied!",
       description: `${label} copied to clipboard`,
     });
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const twilioWebhookUrl = "https://kqzsgqqwnthclrlcfkgs.supabase.co/functions/v1/twilio-webhook";
   const retellWebhookUrl = userId 
-    ? `https://kqzsgqqwnthclrlcfkgs.supabase.co/functions/v1/retell-webhook`
-    : "Save your Twilio credentials first to generate your unique URL";
+    ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/retell-webhook/${userId}`
+    : "";
 
   const retellFunctionJson = `{
             "name": "contact_human",
@@ -283,23 +288,31 @@ const Setup = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 {hasCredentials ? (
-                  <>
+                  <div className="space-y-4">
                     <p className="text-sm text-muted-foreground">
                       Your unique webhook URL is generated automatically after saving Twilio credentials. 
-                      This URL uses your Twilio configuration to send SMS messages.
+                      Use this URL in your Retell AI agent settings to enable SMS collection.
                     </p>
-                    <div className="bg-muted p-3 rounded-lg font-mono text-sm break-all">
-                      {retellWebhookUrl}
+                    <div>
+                      <Label htmlFor="retell-webhook-url">Webhook URL</Label>
+                      <div className="flex gap-2 mt-2">
+                        <Input
+                          id="retell-webhook-url"
+                          value={retellWebhookUrl}
+                          readOnly
+                          className="font-mono text-sm"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => copyToClipboard(retellWebhookUrl, "Retell webhook URL")}
+                        >
+                          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                        </Button>
+                      </div>
                     </div>
-                    <Button
-                      onClick={() => copyToClipboard(retellWebhookUrl, "Retell webhook URL")}
-                      variant="outline"
-                      size="sm"
-                    >
-                      <Copy className="h-4 w-4 mr-2" />
-                      Copy URL
-                    </Button>
-                  </>
+                  </div>
                 ) : (
                   <Alert>
                     <Info className="h-4 w-4" />
