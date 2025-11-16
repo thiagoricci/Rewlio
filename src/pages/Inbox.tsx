@@ -9,6 +9,8 @@ import { MessageInput } from "@/components/inbox/MessageInput";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Inbox as InboxIcon, MessageSquare } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Message {
@@ -31,6 +33,9 @@ interface Conversation {
 export default function Inbox() {
   const [selectedPhone, setSelectedPhone] = useState<string | null>(null);
   const [showMessages, setShowMessages] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const isMobile = useIsMobile();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -135,6 +140,50 @@ export default function Inbox() {
 
   const handleBackToList = () => {
     setShowMessages(false);
+    setSelectedPhone(null);
+  };
+
+  const handleDeleteConversation = async () => {
+    if (!conversationToDelete) return;
+    
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from("sms_messages")
+        .delete()
+        .eq("phone_number", conversationToDelete);
+
+      if (error) throw error;
+
+      toast({
+        title: "Conversation deleted",
+        description: "All messages from this conversation have been removed.",
+      });
+
+      // If deleting currently selected conversation, clear selection
+      if (selectedPhone === conversationToDelete) {
+        setSelectedPhone(null);
+        setShowMessages(false);
+      }
+
+      refetch();
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete conversation. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
+      setConversationToDelete(null);
+    }
+  };
+
+  const handleDeleteClick = (phoneNumber: string) => {
+    setConversationToDelete(phoneNumber);
+    setDeleteDialogOpen(true);
   };
 
   return (
@@ -228,15 +277,16 @@ export default function Inbox() {
                     <ScrollArea className="h-[600px]">
                       <div className="space-y-2">
                         {conversations.map((conversation) => (
-                          <ConversationCard
-                            key={conversation.phoneNumber}
-                            phoneNumber={conversation.phoneNumber}
-                            latestMessage={conversation.latestMessage}
-                            timestamp={conversation.latestTimestamp}
-                            messageCount={conversation.messageCount}
-                            isSelected={selectedPhone === conversation.phoneNumber}
-                            onClick={() => handleConversationSelect(conversation.phoneNumber)}
-                          />
+                  <ConversationCard
+                    key={conversation.phoneNumber}
+                    phoneNumber={conversation.phoneNumber}
+                    latestMessage={conversation.latestMessage}
+                    timestamp={conversation.latestTimestamp}
+                    messageCount={conversation.messageCount}
+                    isSelected={selectedPhone === conversation.phoneNumber}
+                    onClick={() => handleConversationSelect(conversation.phoneNumber)}
+                    onDelete={() => handleDeleteClick(conversation.phoneNumber)}
+                  />
                         ))}
                       </div>
                     </ScrollArea>
@@ -282,6 +332,29 @@ export default function Inbox() {
           </>
         )}
       </main>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Conversation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete all messages from {conversationToDelete}? 
+              This will permanently remove {conversations.find(c => c.phoneNumber === conversationToDelete)?.messageCount || 0} message(s). 
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConversation}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

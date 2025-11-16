@@ -18,9 +18,10 @@ interface InfoRequest {
 interface InfoRequestListProps {
   requests: InfoRequest[];
   isLoading?: boolean;
+  onDelete?: (id: string, request_id: string, info_type: string) => void;
 }
 
-export function InfoRequestList({ requests, isLoading }: InfoRequestListProps) {
+export function InfoRequestList({ requests, isLoading, onDelete }: InfoRequestListProps) {
   if (isLoading) {
     return (
       <Card>
@@ -59,11 +60,16 @@ export function InfoRequestList({ requests, isLoading }: InfoRequestListProps) {
                 <TableHead>Status</TableHead>
                 <TableHead>Value</TableHead>
                 <TableHead>Created</TableHead>
+                <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {requests.map((request) => (
-                <InfoRequestRow key={request.id} request={request} />
+                <InfoRequestRow 
+                  key={request.id} 
+                  request={request}
+                  onDelete={onDelete}
+                />
               ))}
             </TableBody>
           </Table>

@@ -6,10 +6,15 @@ import { FilterBar } from "@/components/dashboard/FilterBar";
 import { Database, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { toast } from "@/hooks/use-toast";
 
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [requestToDelete, setRequestToDelete] = useState<{ id: string; request_id: string; info_type: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const { data: requests = [], isLoading, refetch } = useQuery({
     queryKey: ['info-requests', statusFilter],
@@ -41,6 +46,43 @@ export default function Dashboard() {
     );
   });
 
+  const handleDeleteRequest = async () => {
+    if (!requestToDelete) return;
+    
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from("info_requests")
+        .delete()
+        .eq("id", requestToDelete.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Request deleted",
+        description: "The info request has been removed.",
+      });
+
+      refetch();
+    } catch (error) {
+      console.error("Error deleting request:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete request. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
+      setRequestToDelete(null);
+    }
+  };
+
+  const handleDeleteClick = (id: string, request_id: string, info_type: string) => {
+    setRequestToDelete({ id, request_id, info_type });
+    setDeleteDialogOpen(true);
+  };
+
   return (
     <>
       <Navigation />
@@ -71,12 +113,38 @@ export default function Dashboard() {
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
           />
-          <InfoRequestList requests={filteredRequests} isLoading={isLoading} />
+          <InfoRequestList 
+            requests={filteredRequests} 
+            isLoading={isLoading}
+            onDelete={handleDeleteClick}
+          />
           <div className="mt-6 text-center text-sm text-muted-foreground">
             Showing {filteredRequests.length} of {requests.length} requests
           </div>
         </div>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Request</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete request <span className="font-mono">{requestToDelete?.request_id}</span> for <span className="font-semibold">{requestToDelete?.info_type}</span>? 
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteRequest}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

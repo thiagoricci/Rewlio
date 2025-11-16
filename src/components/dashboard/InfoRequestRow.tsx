@@ -1,7 +1,9 @@
 import { TableCell, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { StatusBadge } from "./StatusBadge";
 import { maskPhoneNumber } from "@/lib/phone-utils";
 import { formatDistanceToNow } from "date-fns";
+import { Trash2 } from "lucide-react";
 
 interface InfoRequest {
   id: string;
@@ -18,9 +20,10 @@ interface InfoRequest {
 
 interface InfoRequestRowProps {
   request: InfoRequest;
+  onDelete?: (id: string, request_id: string, info_type: string) => void;
 }
 
-export function InfoRequestRow({ request }: InfoRequestRowProps) {
+export function InfoRequestRow({ request, onDelete }: InfoRequestRowProps) {
   const formatInfoType = (type: string) => {
     return type.replace('_', ' ').split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -44,6 +47,18 @@ export function InfoRequestRow({ request }: InfoRequestRowProps) {
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
         {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
+      </TableCell>
+      <TableCell>
+        {onDelete && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            onClick={() => onDelete(request.id, request.request_id, request.info_type)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
       </TableCell>
     </TableRow>
   );
