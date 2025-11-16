@@ -1,6 +1,7 @@
 import { formatDistanceToNow } from "date-fns";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { maskPhoneNumber } from "@/lib/phone-utils";
 
 interface ConversationCardProps {
@@ -10,6 +11,7 @@ interface ConversationCardProps {
   messageCount: number;
   isSelected: boolean;
   onClick: () => void;
+  onDelete?: () => void;
 }
 
 export function ConversationCard({
@@ -19,14 +21,28 @@ export function ConversationCard({
   messageCount,
   isSelected,
   onClick,
+  onDelete,
 }: ConversationCardProps) {
   return (
     <Card
-      className={`p-5 cursor-pointer transition-all hover:bg-accent/50 active:scale-[0.98] ${
+      className={`p-5 cursor-pointer transition-all hover:bg-accent/50 active:scale-[0.98] relative group ${
         isSelected ? "bg-accent" : ""
       }`}
       onClick={onClick}
     >
+      {onDelete && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      )}
       <div className="flex items-start gap-4">
         <div className="flex-shrink-0">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
