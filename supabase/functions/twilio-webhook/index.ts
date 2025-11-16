@@ -5,90 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface ValidationResult {
-  valid: boolean;
-  normalized?: string;
-  error?: string;
-}
-
-function validateEmail(email: string): ValidationResult {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const trimmed = email.trim();
-  
-  if (!emailRegex.test(trimmed)) {
-    return {
-      valid: false,
-      error: 'Please use format: name@example.com'
-    };
-  }
-  
-  return {
-    valid: true,
-    normalized: trimmed.toLowerCase()
-  };
-}
-
-function validateAddress(address: string): ValidationResult {
-  const trimmed = address.trim();
-  
-  if (!/\d/.test(trimmed)) {
-    return {
-      valid: false,
-      error: 'Address must include a street number'
-    };
-  }
-  
-  if (trimmed.length < 15) {
-    return {
-      valid: false,
-      error: 'Please include street number, city, state, and ZIP'
-    };
-  }
-  
-  return {
-    valid: true,
-    normalized: trimmed
-  };
-}
-
-function validateAccountNumber(accountNumber: string): ValidationResult {
-  const digitsOnly = accountNumber.replace(/\D/g, '');
-  
-  if (digitsOnly.length < 5) {
-    return {
-      valid: false,
-      error: 'Account number must be at least 5 digits'
-    };
-  }
-  
-  if (digitsOnly.length > 20) {
-    return {
-      valid: false,
-      error: 'Account number must be no more than 20 digits'
-    };
-  }
-  
-  return {
-    valid: true,
-    normalized: digitsOnly
-  };
-}
-
-function validate(value: string, type: string): ValidationResult {
-  switch (type) {
-    case 'email':
-      return validateEmail(value);
-    case 'address':
-      return validateAddress(value);
-    case 'account_number':
-      return validateAccountNumber(value);
-    default:
-      return {
-        valid: false,
-        error: 'Unknown validation type'
-      };
-  }
-}
 
 async function sendSMS(to: string, message: string, accountSid: string, authToken: string, fromNumber: string): Promise<void> {
   const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
@@ -208,16 +124,16 @@ Deno.serve(async (req) => {
       console.error('Error updating message with request_id:', updateError);
     }
 
-    // Validate the response
-    const validation = validate(body, request.info_type);
-
-    if (validation.valid) {
+    // Accept any non-empty response as valid
+    const trimmedBody = body.trim();
+    
+    if (trimmedBody.length > 0) {
       // Update request as completed
       const { error: updateError } = await supabase
         .from('info_requests')
         .update({
           status: 'completed',
-          received_value: validation.normalized,
+          received_value: trimmedBody,
           received_at: new Date().toISOString()
         })
         .eq('id', request.id);
@@ -228,40 +144,7 @@ Deno.serve(async (req) => {
         console.log('Request completed successfully');
       }
     } else {
-      // Send error SMS
-      console.log('Validation failed:', validation.error);
-      const errorMessage = `That doesn't look right.
-
-${validation.error}
-
-Please reply again with the correct information.`;
-      
-      try {
-        await sendSMS(
-          from, 
-          errorMessage,
-          credentials.twilio_account_sid,
-          credentials.twilio_auth_token,
-          credentials.twilio_phone_number
-        );
-
-        // Log the outbound error message
-        const { error: outboundLogError } = await supabase
-          .from('sms_messages')
-          .insert({
-            user_id: credentials.user_id,
-            phone_number: from,
-            message_body: errorMessage,
-            direction: 'outbound',
-            request_id: request.request_id
-          });
-
-        if (outboundLogError) {
-          console.error('Error logging outbound message:', outboundLogError);
-        }
-      } catch (smsError) {
-        console.error('Failed to send error SMS:', smsError);
-      }
+      console.log('Empty response received, ignoring');
     }
 
     // Return empty TwiML response

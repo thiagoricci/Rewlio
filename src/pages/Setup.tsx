@@ -55,17 +55,12 @@ const Setup = () => {
   const retellFunctionJson = `{
   "type": "object",
   "required": [
-    "message",
-    "info_type"
+    "message"
   ],
   "properties": {
     "message": {
       "type": "string",
-      "description": "Hi, could you please send your email here?"
-    },
-    "info_type": {
-      "type": "string",
-      "description": "This is the type of information requested, example: email, full name, address or other"
+      "description": "This is the message to send to the user"
     }
   }
 }`;
@@ -360,7 +355,6 @@ const Setup = () => {
                     <div className="ml-6 space-y-2 text-sm text-muted-foreground">
                       <p><strong>Name:</strong> Must be exactly <code className="bg-muted px-2 py-1 rounded">contact_human</code></p>
                       <p><strong>message parameter:</strong> The SMS text your caller will receive</p>
-                      <p><strong>info_type parameter:</strong> Choose from "email", "address", or "account_number"</p>
                     </div>
                   </li>
                 </ol>
@@ -425,13 +419,11 @@ or account numbers, use the contact_human function.
 Examples:
 - "I'll text you so you can type your email address"
   Then call: contact_human with 
-  message="Please reply with your email address" 
-  and info_type="email"
+  message="Please reply with your email address"
 
 - "Let me send you a text for your mailing address"
   Then call: contact_human with 
-  message="Please reply with your full mailing address" 
-  and info_type="address"`}
+  message="Please reply with your full mailing address"`}
                 </pre>
               </CardContent>
             </Card>

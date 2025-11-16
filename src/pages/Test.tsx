@@ -15,7 +15,6 @@ export default function Test() {
   const [loading, setLoading] = useState(false);
   const [callId, setCallId] = useState("test-" + Date.now());
   const [phoneNumber, setPhoneNumber] = useState("+1");
-  const [infoType, setInfoType] = useState("email");
   const [message, setMessage] = useState("Please reply with your email.");
   const [hasCredentials, setHasCredentials] = useState<boolean | null>(null);
   const { toast } = useToast();
@@ -45,7 +44,6 @@ export default function Test() {
         body: JSON.stringify({ 
           call_id: callId, 
           caller_number: phoneNumber, 
-          info_type: infoType, 
           message,
           user_id: session.user.id
         })
@@ -91,17 +89,6 @@ export default function Test() {
               <div className="space-y-2">
                 <Label>Phone Number</Label>
                 <Input value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="+12345678901" />
-              </div>
-              <div className="space-y-2">
-                <Label>Info Type</Label>
-                <Select value={infoType} onValueChange={setInfoType}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="email">Email</SelectItem>
-                    <SelectItem value="address">Address</SelectItem>
-                    <SelectItem value="account_number">Account Number</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
               <div className="space-y-2">
                 <Label>Message</Label>

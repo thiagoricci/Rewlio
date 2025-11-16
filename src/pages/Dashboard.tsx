@@ -13,7 +13,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [requestToDelete, setRequestToDelete] = useState<{ id: string; request_id: string; info_type: string } | null>(null);
+  const [requestToDelete, setRequestToDelete] = useState<{ id: string; request_id: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   const { data: requests = [], isLoading, refetch } = useQuery({
@@ -78,8 +78,8 @@ export default function Dashboard() {
     }
   };
 
-  const handleDeleteClick = (id: string, request_id: string, info_type: string) => {
-    setRequestToDelete({ id, request_id, info_type });
+  const handleDeleteClick = (id: string, request_id: string) => {
+    setRequestToDelete({ id, request_id });
     setDeleteDialogOpen(true);
   };
 
@@ -128,10 +128,10 @@ export default function Dashboard() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Request</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete request <span className="font-mono">{requestToDelete?.request_id}</span> for <span className="font-semibold">{requestToDelete?.info_type}</span>? 
-              This action cannot be undone.
-            </AlertDialogDescription>
+          <AlertDialogDescription>
+            Are you sure you want to delete request <span className="font-mono">{requestToDelete?.request_id}</span>? 
+            This action cannot be undone.
+          </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>

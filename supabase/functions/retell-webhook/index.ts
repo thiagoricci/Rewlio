@@ -9,7 +9,6 @@ const corsHeaders = {
 interface TestPagePayload {
   call_id: string;
   caller_number: string;
-  info_type: string;
   message: string;
   user_id: string;
 }
@@ -24,7 +23,6 @@ interface RetellPayload {
   name: string;
   args: {
     message: string;
-    info_type?: string;
     user_id: string;
     [key: string]: any;
   };
@@ -93,7 +91,6 @@ Deno.serve(async (req) => {
     let call_id: string;
     let caller_number: string;
     let message: string;
-    let info_type: string;
     let user_id: string;
 
     if (isRetellPayload) {
@@ -102,19 +99,17 @@ Deno.serve(async (req) => {
       call_id = retellBody.call.call_id;
       caller_number = retellBody.call.from_number;
       message = retellBody.args.message;
-      info_type = retellBody.args.info_type || 'general';
       // Use user_id from URL path for Retell payloads
       user_id = userIdFromPath && userIdFromPath !== 'retell-webhook' ? userIdFromPath : retellBody.args.user_id;
-      console.log('Parsed Retell payload:', { call_id, caller_number, message, info_type, user_id, userIdFromPath });
+      console.log('Parsed Retell payload:', { call_id, caller_number, message, user_id, userIdFromPath });
     } else {
       // Test page payload structure - use user_id from body
       const testBody = body as TestPagePayload;
       call_id = testBody.call_id;
       caller_number = testBody.caller_number;
       message = testBody.message;
-      info_type = testBody.info_type;
       user_id = testBody.user_id;
-      console.log('Parsed Test page payload:', { call_id, caller_number, message, info_type, user_id });
+      console.log('Parsed Test page payload:', { call_id, caller_number, message, user_id });
     }
 
     // Validate required fields
@@ -150,7 +145,6 @@ Deno.serve(async (req) => {
       .insert({
         request_id: requestId,
         call_id: call_id,
-        info_type: info_type,
         recipient_phone: caller_number,
         prompt_message: message,
         expires_at: expiresAt.toISOString(),

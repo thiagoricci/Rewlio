@@ -9,7 +9,6 @@ interface InfoRequest {
   id: string;
   request_id: string;
   call_id: string;
-  info_type: string;
   recipient_phone: string;
   status: 'pending' | 'completed' | 'expired' | 'invalid';
   received_value?: string;
@@ -20,21 +19,14 @@ interface InfoRequest {
 
 interface InfoRequestRowProps {
   request: InfoRequest;
-  onDelete?: (id: string, request_id: string, info_type: string) => void;
+  onDelete?: (id: string, request_id: string) => void;
 }
 
 export function InfoRequestRow({ request, onDelete }: InfoRequestRowProps) {
-  const formatInfoType = (type: string) => {
-    return type.replace('_', ' ').split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-  };
-
   return (
     <TableRow>
       <TableCell className="font-mono text-sm">{request.request_id}</TableCell>
       <TableCell className="font-mono text-sm">{maskPhoneNumber(request.recipient_phone)}</TableCell>
-      <TableCell>{formatInfoType(request.info_type)}</TableCell>
       <TableCell>
         <StatusBadge status={request.status} />
       </TableCell>
@@ -54,7 +46,7 @@ export function InfoRequestRow({ request, onDelete }: InfoRequestRowProps) {
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-            onClick={() => onDelete(request.id, request.request_id, request.info_type)}
+            onClick={() => onDelete(request.id, request.request_id)}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
