@@ -61,7 +61,7 @@ const Setup = () => {
   "properties": {
     "message": {
       "type": "string",
-      "description": "This is the information requested for the user"
+      "description": "Hi, could you please send your email here?"
     },
     "info_type": {
       "type": "string",
