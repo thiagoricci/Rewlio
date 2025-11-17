@@ -60,8 +60,8 @@ const Index = () => {
             Meslio
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            A smooth, intelligent way to handle messages. Seamlessly collect information from voice calls via SMS.
-            Perfect for email addresses, physical addresses, and account numbers.
+            Bridge the gap between AI and humans. Get real-time authorization and collect information during voice calls via SMS. 
+            Perfect for human-in-the-loop workflows and data collection.
           </p>
           <div className="flex gap-4 justify-center">
             {user ? <>
@@ -88,9 +88,9 @@ const Index = () => {
               <div className="p-2 bg-primary/10 rounded-lg w-fit mb-2">
                 <Zap className="h-5 w-5 text-primary" />
               </div>
-              <CardTitle>Real-time SMS</CardTitle>
+              <CardTitle>Human-in-the-Loop</CardTitle>
               <CardDescription>
-                Instantly send SMS requests during live calls
+                Get instant authorization from humans during AI conversations
               </CardDescription>
             </CardHeader>
           </Card>
@@ -100,9 +100,9 @@ const Index = () => {
               <div className="p-2 bg-success/10 rounded-lg w-fit mb-2">
                 <Shield className="h-5 w-5 text-success" />
               </div>
-              <CardTitle>Smart Validation</CardTitle>
+              <CardTitle>Information Collection</CardTitle>
               <CardDescription>
-                Automatic validation for emails, addresses, and account numbers
+                Seamlessly collect any information via SMS during voice calls
               </CardDescription>
             </CardHeader>
           </Card>
@@ -132,11 +132,11 @@ const Index = () => {
           </Card>
         </div>
 
-        <Card className="bg-card border-border">
+        <Card className="bg-card border-border mb-8">
           <CardHeader>
-            <CardTitle className="text-2xl">How It Works</CardTitle>
+            <CardTitle className="text-2xl">Use Case 1: Human-in-the-Loop Authorization</CardTitle>
             <CardDescription>
-              Four simple steps to collect information via SMS
+              Get real-time approval or authorization from humans during AI conversations
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -146,9 +146,9 @@ const Index = () => {
                   1
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Voice AI Triggers Request</h3>
+                  <h3 className="font-semibold mb-1">AI Needs Authorization</h3>
                   <p className="text-muted-foreground text-sm">
-                    When your Retell AI agent needs information, it calls the webhook endpoint
+                    During a call, your AI agent needs human approval for a decision (e.g., "Can I proceed with this refund?")
                   </p>
                 </div>
               </div>
@@ -158,9 +158,9 @@ const Index = () => {
                   2
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">SMS Sent to Caller</h3>
+                  <h3 className="font-semibold mb-1">SMS Sent for Approval</h3>
                   <p className="text-muted-foreground text-sm">
-                    System sends an SMS to the caller's phone      
+                    System sends an SMS to the designated phone number asking for YES/NO authorization
                   </p>
                 </div>
               </div>
@@ -170,9 +170,9 @@ const Index = () => {
                   3
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Caller Replies</h3>
+                  <h3 className="font-semibold mb-1">Human Responds</h3>
                   <p className="text-muted-foreground text-sm">
-                    Caller texts back their information, which is validated automatically
+                    The human reviews and replies with their decision via SMS
                   </p>
                 </div>
               </div>
@@ -182,9 +182,69 @@ const Index = () => {
                   4
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">AI Continues Conversation</h3>
+                  <h3 className="font-semibold mb-1">AI Continues with Authorization</h3>
                   <p className="text-muted-foreground text-sm">
-                    Validated information is returned to the AI, which continues the call seamlessly
+                    The response is returned to the AI, which proceeds or halts based on the human's decision
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-2xl">Use Case 2: Information Collection</CardTitle>
+            <CardDescription>
+              Seamlessly collect any information from callers via SMS
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-8">
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-8 h-8 bg-success text-success-foreground rounded-full flex items-center justify-center font-bold">
+                  1
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-1">AI Needs Information</h3>
+                  <p className="text-muted-foreground text-sm">
+                    When your AI agent needs specific information (email, address, account number, etc.), it triggers a request
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-8 h-8 bg-success text-success-foreground rounded-full flex items-center justify-center font-bold">
+                  2
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-1">SMS Sent to Caller</h3>
+                  <p className="text-muted-foreground text-sm">
+                    System sends an SMS to the caller's phone with a clear prompt for the needed information
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-8 h-8 bg-success text-success-foreground rounded-full flex items-center justify-center font-bold">
+                  3
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-1">Caller Replies</h3>
+                  <p className="text-muted-foreground text-sm">
+                    Caller texts back their information, which is captured and stored securely
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-8 h-8 bg-success text-success-foreground rounded-full flex items-center justify-center font-bold">
+                  4
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-1">AI Continues with Data</h3>
+                  <p className="text-muted-foreground text-sm">
+                    The collected information is returned to the AI, which continues the conversation seamlessly
                   </p>
                 </div>
               </div>
