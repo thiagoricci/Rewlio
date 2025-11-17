@@ -29,7 +29,7 @@ const Index = () => {
       <header className="container mx-auto px-4 py-6 flex justify-between items-center border-b">
         <div className="flex items-center space-x-2">
           <MessageSquare className="h-6 w-6 text-primary" />
-          <span className="font-semibold text-lg">Meslio</span>
+          <span className="font-semibold text-lg">Messlio</span>
         </div>
         <div className="flex space-x-4">
           {user ? <>
@@ -57,7 +57,7 @@ const Index = () => {
             <span className="text-sm font-medium text-primary">Message + Flow</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">
-            Meslio
+            Messlio
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
             Bridge the gap between AI and humans. Get real-time authorization and collect information during voice calls via SMS. 
