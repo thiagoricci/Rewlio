@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Info } from "lucide-react";
+import { Loader2, Info, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -17,6 +17,7 @@ export default function Test() {
   const [phoneNumber, setPhoneNumber] = useState("+1");
   const [message, setMessage] = useState("Please reply with your email.");
   const [hasCredentials, setHasCredentials] = useState<boolean | null>(null);
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -25,6 +26,9 @@ export default function Test() {
       if (!user) return;
       const { data } = await supabase.from("user_credentials").select("id").eq("user_id", user.id).maybeSingle();
       setHasCredentials(!!data);
+      
+      const { data: credits } = await supabase.from("user_credits").select("credits").eq("user_id", user.id).single();
+      if (credits) setCreditBalance(credits.credits);
     };
     check();
   }, []);
@@ -82,6 +86,19 @@ export default function Test() {
                   </AlertDescription>
                 </Alert>
               )}
+              {creditBalance !== null && (
+                <Alert className={creditBalance <= 20 ? "border-warning bg-warning/10" : ""}>
+                  <AlertCircle className={`h-4 w-4 ${creditBalance <= 20 ? "text-warning" : "text-info"}`} />
+                  <AlertDescription className={creditBalance <= 20 ? "text-warning-foreground" : ""}>
+                    Current balance: <strong>{creditBalance} credits</strong>
+                    {creditBalance <= 20 && (
+                      <>
+                        {" "}- Low balance! <Link to="/credits" className="underline">Purchase more</Link>
+                      </>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              )}
               <div className="space-y-2">
                 <Label>Call ID</Label>
                 <Input value={callId} onChange={(e) => setCallId(e.target.value)} />
@@ -94,7 +111,7 @@ export default function Test() {
                 <Label>Message</Label>
                 <Input value={message} onChange={(e) => setMessage(e.target.value)} />
               </div>
-              <Button onClick={handleTest} disabled={loading || hasCredentials === false} className="w-full">
+              <Button onClick={handleTest} disabled={loading || hasCredentials === false || (creditBalance !== null && creditBalance < 1)} className="w-full">
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Send Test SMS
               </Button>
