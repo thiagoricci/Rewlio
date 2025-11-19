@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      credit_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          stripe_session_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          stripe_session_id?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          stripe_session_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       info_requests: {
         Row: {
           call_id: string
@@ -92,6 +122,36 @@ export type Database = {
         }
         Relationships: []
       }
+      stripe_products: {
+        Row: {
+          created_at: string
+          credits: number
+          id: string
+          name: string
+          price_cents: number
+          stripe_price_id: string
+          stripe_product_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits: number
+          id?: string
+          name: string
+          price_cents: number
+          stripe_price_id: string
+          stripe_product_id: string
+        }
+        Update: {
+          created_at?: string
+          credits?: number
+          id?: string
+          name?: string
+          price_cents?: number
+          stripe_price_id?: string
+          stripe_product_id?: string
+        }
+        Relationships: []
+      }
       user_credentials: {
         Row: {
           created_at: string
@@ -117,6 +177,30 @@ export type Database = {
           twilio_account_sid?: string
           twilio_auth_token?: string
           twilio_phone_number?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_credits: {
+        Row: {
+          created_at: string
+          credits: number
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits?: number
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits?: number
+          id?: string
           updated_at?: string
           user_id?: string
         }
