@@ -120,6 +120,32 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Check user credits before proceeding
+    console.log('Checking credits for user:', user_id);
+    const { data: creditsData, error: creditsError } = await supabase
+      .from('user_credits')
+      .select('credits')
+      .eq('user_id', user_id)
+      .single();
+
+    if (creditsError || !creditsData) {
+      console.error('Error fetching credits:', creditsError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to check user credits' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (creditsData.credits < 1) {
+      console.log('Insufficient credits for user:', user_id);
+      return new Response(
+        JSON.stringify({ error: 'Insufficient credits. Please purchase more credits to send SMS.' }),
+        { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('User has sufficient credits:', creditsData.credits);
+
     // Fetch user's Twilio credentials
     const { data: credentials, error: credError } = await supabase
       .from('user_credentials')
@@ -172,6 +198,28 @@ Deno.serve(async (req) => {
         credentials.twilio_auth_token,
         credentials.twilio_phone_number
       );
+      console.log('SMS sent successfully with SID:', twilioMessageSid);
+      
+      // Deduct 1 credit after successful SMS send
+      console.log('Deducting 1 credit from user:', user_id);
+      const { error: deductError } = await supabase
+        .from('user_credits')
+        .update({ credits: creditsData.credits - 1 })
+        .eq('user_id', user_id);
+
+      if (deductError) {
+        console.error('Error deducting credit:', deductError);
+        // Don't fail the request since SMS was already sent
+      } else {
+        // Log the transaction
+        await supabase.from('credit_transactions').insert({
+          user_id: user_id,
+          amount: -1,
+          type: 'sms_sent',
+          description: `SMS sent to ${caller_number}`,
+        });
+        console.log('Credit deducted successfully. New balance:', creditsData.credits - 1);
+      }
     } catch (smsError) {
       console.error('SMS error:', smsError);
       // Mark request as failed but don't fail the whole request
