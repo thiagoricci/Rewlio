@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, CreditCard, Zap, AlertCircle } from "lucide-react";
+import { Loader2, CreditCard, Zap, AlertCircle, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -17,6 +17,7 @@ interface CreditPackage {
 
 export default function Credits() {
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [packages, setPackages] = useState<CreditPackage[]>([]);
   const { toast } = useToast();
@@ -24,24 +25,54 @@ export default function Credits() {
   useEffect(() => {
     fetchCredits();
     fetchPackages();
+
+    // Refetch credits when window gains focus (user returns to tab)
+    const handleFocus = () => {
+      fetchCredits();
+    };
+    window.addEventListener('focus', handleFocus);
+
+    // Optional: Poll for updates every 30 seconds while on this page
+    const pollInterval = setInterval(() => {
+      fetchCredits();
+    }, 30000);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(pollInterval);
+    };
   }, []);
 
-  const fetchCredits = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+  const fetchCredits = async (showRefreshing = false) => {
+    if (showRefreshing) setRefreshing(true);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-    const { data, error } = await supabase
-      .from("user_credits")
-      .select("credits")
-      .eq("user_id", user.id)
-      .single();
+      const { data, error } = await supabase
+        .from("user_credits")
+        .select("credits")
+        .eq("user_id", user.id)
+        .single();
 
-    if (error) {
-      console.error("Error fetching credits:", error);
-      return;
+      if (error) {
+        console.error("Error fetching credits:", error);
+        return;
+      }
+
+      setCreditBalance(data.credits);
+    } finally {
+      if (showRefreshing) setRefreshing(false);
     }
+  };
 
-    setCreditBalance(data.credits);
+  const handleManualRefresh = () => {
+    fetchCredits(true);
+    toast({
+      title: "Refreshing",
+      description: "Checking for updated credit balance...",
+    });
   };
 
   const fetchPackages = async () => {
@@ -98,9 +129,19 @@ export default function Credits() {
 
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5 text-primary" />
-                Current Balance
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-primary" />
+                  Current Balance
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleManualRefresh}
+                  disabled={refreshing}
+                >
+                  <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent>
