@@ -122,13 +122,41 @@ Deno.serve(async (req) => {
 
     // Check user credits before proceeding
     console.log('Checking credits for user:', user_id);
-    const { data: creditsData, error: creditsError } = await supabase
+    let { data: creditsData, error: creditsError } = await supabase
       .from('user_credits')
       .select('credits')
       .eq('user_id', user_id)
-      .single();
+      .maybeSingle();
 
-    if (creditsError || !creditsData) {
+    // If user doesn't have credits row, create one with 20 free credits
+    if (!creditsData && !creditsError) {
+      console.log('No credits found for user, creating initial 20 credits');
+      const { data: newCredits, error: insertError } = await supabase
+        .from('user_credits')
+        .insert({ user_id: user_id, credits: 20 })
+        .select('credits')
+        .single();
+
+      if (insertError) {
+        console.error('Error creating initial credits:', insertError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to initialize user credits' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      creditsData = newCredits;
+      
+      // Log the free credits transaction
+      await supabase.from('credit_transactions').insert({
+        user_id: user_id,
+        amount: 20,
+        type: 'free_signup',
+        description: 'Free signup credits',
+      });
+    }
+
+    if (creditsError) {
       console.error('Error fetching credits:', creditsError);
       return new Response(
         JSON.stringify({ error: 'Failed to check user credits' }),
@@ -136,7 +164,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (creditsData.credits < 1) {
+    if (!creditsData || creditsData.credits < 1) {
       console.log('Insufficient credits for user:', user_id);
       return new Response(
         JSON.stringify({ error: 'Insufficient credits. Please purchase more credits to send SMS.' }),
