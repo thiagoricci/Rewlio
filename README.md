@@ -1,6 +1,6 @@
-# Meslio
+# Rettilio
 
-**Meslio** (Message + Flow) - A smooth, intelligent way to handle messages. This application seamlessly collects hard-to-spell information from voice calls via SMS.
+**Rettilio** (Message + Flow) - A smooth, intelligent way to handle messages. This application seamlessly collects hard-to-spell information from voice calls via SMS.
 
 ## Project info
 
