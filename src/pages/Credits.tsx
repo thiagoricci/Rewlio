@@ -151,7 +151,7 @@ export default function Credits() {
               {creditBalance !== null && creditBalance <= 20 && (
                 <Alert className="mt-4 border-warning bg-warning/10">
                   <AlertCircle className="h-4 w-4 text-warning" />
-                  <AlertDescription className="text-warning-foreground">
+                  <AlertDescription className="text-warning">
                     Your credit balance is low. Purchase more credits to continue sending SMS.
                   </AlertDescription>
                 </Alert>
