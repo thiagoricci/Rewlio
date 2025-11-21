@@ -54,7 +54,7 @@ const Index = () => {
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-6">
             <MessageSquare className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Message + Flow</span>
+            <span className="text-sm font-medium text-primary">Retell + Twilio</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">
             Rettilio
