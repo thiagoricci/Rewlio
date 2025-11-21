@@ -1,7 +1,7 @@
-# Meslio - Integration Guide
+# Rettilio - Integration Guide
 
 ## Overview
-**Meslio** (Message + Flow) is a smooth, intelligent way to handle messages. This system allows Retell AI voice agents to collect hard-to-spell information (emails, addresses, account numbers) from callers via SMS.
+**Rettilio** (Message + Flow) is a smooth, intelligent way to handle messages. This system allows Retell AI voice agents to collect hard-to-spell information (emails, addresses, account numbers) from callers via SMS.
 
 **Multi-Tenant Architecture:** Each user has their own Twilio credentials, enabling multiple users to run independent SMS collection systems with their own phone numbers and billing.
 

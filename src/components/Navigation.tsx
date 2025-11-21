@@ -68,7 +68,7 @@ const Navigation = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <MessageSquare className="h-6 w-6 text-primary" />
-            <span className="font-semibold text-lg">Meslio</span>
+            <span className="font-semibold text-lg">Rettilio</span>
           </Link>
 
           {/* Desktop Navigation */}
