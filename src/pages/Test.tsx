@@ -89,11 +89,11 @@ export default function Test() {
               {creditBalance !== null && (
                 <Alert className={creditBalance <= 20 ? "border-warning bg-warning/10" : ""}>
                   <AlertCircle className={`h-4 w-4 ${creditBalance <= 20 ? "text-warning" : "text-info"}`} />
-                  <AlertDescription className={creditBalance <= 20 ? "text-warning-foreground" : ""}>
+                  <AlertDescription className={creditBalance <= 20 ? "text-foreground" : ""}>
                     Current balance: <strong>{creditBalance} credits</strong>
                     {creditBalance <= 20 && (
                       <>
-                        {" "}- Low balance! <Link to="/credits" className="underline">Purchase more</Link>
+                        {" "}- Low balance! <Link to="/credits" className="text-warning hover:underline font-semibold">Purchase more</Link>
                       </>
                     )}
                   </AlertDescription>
