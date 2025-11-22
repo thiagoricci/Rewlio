@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, LogOut, Menu } from "lucide-react";
+import { MessageSquare, LogOut, Menu, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -13,6 +13,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
 
 const Navigation = () => {
   const location = useLocation();
@@ -20,21 +21,47 @@ const Navigation = () => {
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const isMobile = useIsMobile();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setUser(session?.user ?? null);
+        if (session?.user) {
+          fetchCredits();
+        }
       }
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchCredits();
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchCredits = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from("user_credits")
+        .select("credits")
+        .eq("user_id", user.id)
+        .single();
+
+      if (data) {
+        setCreditBalance(data.credits);
+      }
+    } catch (error) {
+      console.error("Error fetching credits:", error);
+    }
+  };
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -119,6 +146,17 @@ const Navigation = () => {
                 </Link>
               </div>
               <div className="flex items-center space-x-4">
+                {creditBalance !== null && (
+                  <Link to="/credits">
+                    <Badge 
+                      variant={creditBalance <= 10 ? "destructive" : "secondary"}
+                      className="flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity"
+                    >
+                      <Zap className="h-3 w-3" />
+                      {creditBalance}
+                    </Badge>
+                  </Link>
+                )}
                 <span className="text-sm text-muted-foreground">{user.email}</span>
                 <Button variant="outline" size="sm" onClick={handleLogout}>
                   <LogOut className="h-4 w-4 mr-2" />
@@ -191,6 +229,19 @@ const Navigation = () => {
                   </Link>
                   
                   <div className="border-t pt-4 mt-4">
+                    {creditBalance !== null && (
+                      <Link to="/credits" onClick={handleNavClick}>
+                        <div className="px-3 mb-4 flex items-center gap-2">
+                          <Badge 
+                            variant={creditBalance <= 10 ? "destructive" : "secondary"}
+                            className="flex items-center gap-1"
+                          >
+                            <Zap className="h-3 w-3" />
+                            {creditBalance} credits
+                          </Badge>
+                        </div>
+                      </Link>
+                    )}
                     <p className="text-sm text-muted-foreground px-3 mb-4 truncate">
                       {user.email}
                     </p>
