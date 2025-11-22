@@ -148,7 +148,7 @@ export default function Credits() {
               <div className="text-4xl font-bold text-primary">
                 {creditBalance !== null ? creditBalance : "..."} credits
               </div>
-              {creditBalance !== null && creditBalance <= 20 && (
+              {creditBalance !== null && creditBalance <= 10 && (
                 <Alert className="mt-4 border-warning bg-warning/10">
                   <AlertCircle className="h-4 w-4 text-warning" />
                   <AlertDescription className="text-warning">
