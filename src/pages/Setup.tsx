@@ -72,7 +72,7 @@ const Setup = () => {
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Setup Guide</h1>
           <p className="text-muted-foreground">
-            Follow these steps to configure your Rettilio account and start collecting information via SMS
+            Follow these steps to configure your Rilio account and start collecting information via SMS
           </p>
         </div>
 
@@ -88,25 +88,25 @@ const Setup = () => {
           <TabsContent value="overview" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>What is Rettilio?</CardTitle>
+                <CardTitle>What is Rilio?</CardTitle>
                 <CardDescription>
-                  Rettilio enables Retell AI voice agents to collect hard-to-spell information via SMS
+                  Rilio enables Retell AI voice agents to collect hard-to-spell information via SMS
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-foreground">
                   When your AI voice agent needs to collect information like email addresses, 
-                  physical addresses, or account numbers, Rettilio seamlessly sends an SMS to your caller, 
+                  physical addresses, or account numbers, Rilio seamlessly sends an SMS to your caller, 
                   receives their response, validates it, and returns the information to your agent.
                 </p>
 
                 <div className="space-y-3">
                   <h3 className="font-semibold text-lg">How It Works:</h3>
                   <ol className="space-y-2 list-decimal list-inside text-foreground">
-                    <li>Your Retell AI agent calls the Rettilio webhook function</li>
-                    <li>Rettilio sends an SMS to the caller via your Twilio account</li>
+                    <li>Your Retell AI agent calls the Rilio webhook function</li>
+                    <li>Rilio sends an SMS to the caller via your Twilio account</li>
                     <li>The caller receives the SMS and replies with their information</li>
-                    <li>Rettilio validates the response and returns it to your Retell AI agent</li>
+                    <li>Rilio validates the response and returns it to your Retell AI agent</li>
                     <li>Your agent continues the conversation with the collected information</li>
                   </ol>
                 </div>
@@ -115,7 +115,7 @@ const Setup = () => {
                   <Info className="h-4 w-4" />
                   <AlertDescription>
                     <strong>Prerequisites:</strong> You'll need a Twilio account with an SMS-enabled 
-                    phone number and a Retell AI account to use Rettilio.
+                    phone number and a Retell AI account to use Rilio.
                   </AlertDescription>
                 </Alert>
 
@@ -127,7 +127,7 @@ const Setup = () => {
                   <ul className="space-y-2 ml-7">
                     <li className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-primary" />
-                      <span>Rettilio account created</span>
+                      <span>Rilio account created</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle className={`h-4 w-4 ${hasCredentials ? 'text-primary' : 'text-muted-foreground'}`} />
@@ -184,7 +184,7 @@ const Setup = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Step 2: Configure Credentials in Rettilio</CardTitle>
+                <CardTitle>Step 2: Configure Credentials in Rilio</CardTitle>
                 <CardDescription>Save your Twilio credentials in Settings</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -228,7 +228,7 @@ const Setup = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Step 3: Configure Twilio Webhook</CardTitle>
-                <CardDescription>Set up Twilio to forward SMS replies to Rettilio</CardDescription>
+                <CardDescription>Set up Twilio to forward SMS replies to Rilio</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Alert>
@@ -371,7 +371,7 @@ const Setup = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Step 3: Set Function Webhook URL</CardTitle>
-                <CardDescription>Connect the function to Rettilio</CardDescription>
+                <CardDescription>Connect the function to Rilio</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {hasCredentials ? (
