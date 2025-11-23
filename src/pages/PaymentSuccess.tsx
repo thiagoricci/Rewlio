@@ -17,7 +17,7 @@ export default function PaymentSuccess() {
 
   useEffect(() => {
     let pollCount = 0;
-    const maxPolls = 15; // Poll for up to 30 seconds (15 * 2s)
+    const maxPolls = 20; // Poll for up to 20 seconds (20 * 1s)
 
     // Get initial credit balance
     const getInitialBalance = async () => {
@@ -37,7 +37,7 @@ export default function PaymentSuccess() {
 
     getInitialBalance();
 
-    // Poll for credit updates
+    // Poll for credit updates - faster polling (every 1 second)
     const pollInterval = setInterval(async () => {
       pollCount++;
 
@@ -56,15 +56,25 @@ export default function PaymentSuccess() {
         setCreditsAdded(true);
         setLoading(false);
         clearInterval(pollInterval);
+        
+        // Auto-redirect to credits page after 1.5 seconds
+        setTimeout(() => {
+          navigate("/credits");
+        }, 1500);
       } else if (pollCount >= maxPolls) {
-        // Timeout - stop polling but allow user to navigate
+        // Timeout - redirect anyway after showing the page
         setLoading(false);
         clearInterval(pollInterval);
+        
+        // Redirect even on timeout
+        setTimeout(() => {
+          navigate("/credits");
+        }, 2000);
       }
-    }, 2000);
+    }, 1000);
 
     return () => clearInterval(pollInterval);
-  }, [initialCredits]);
+  }, [initialCredits, navigate]);
 
   return (
     <>
@@ -91,7 +101,7 @@ export default function PaymentSuccess() {
             ) : creditsAdded ? (
               <>
                 <p className="text-muted-foreground">
-                  Your credits have been added successfully!
+                  Your credits have been added successfully! Redirecting to credits page...
                 </p>
                 {newCredits !== null && initialCredits !== null && (
                   <div className="bg-success/10 border border-success/20 rounded-lg p-4">
@@ -107,7 +117,7 @@ export default function PaymentSuccess() {
               </>
             ) : (
               <p className="text-muted-foreground">
-                Your payment was successful. Credits should appear shortly.
+                Your payment was successful. Redirecting to credits page...
               </p>
             )}
             {sessionId && (
@@ -121,7 +131,7 @@ export default function PaymentSuccess() {
                 className="w-full"
                 disabled={loading}
               >
-                {loading ? "Please Wait..." : "View Credits"}
+                {loading ? "Processing..." : "Go to Credits Now"}
               </Button>
             </div>
           </CardContent>
