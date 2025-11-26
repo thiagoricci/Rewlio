@@ -63,8 +63,7 @@ const Index = () => {
               Rilio
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              Bridge the gap between AI and humans. Get real-time authorization and collect information during voice calls via SMS. 
-              Perfect for human-in-the-loop workflows and data collection.
+              Enable 2-way messaging with your voice agent. Get real-time human authorization and collect information seamlessly during AI conversations via SMS.
             </p>
             <div className="flex gap-4 justify-center">
               {user ? (
@@ -275,7 +274,7 @@ const Index = () => {
                 <span className="font-semibold">Rilio</span>
               </div>
               <p className="text-sm text-muted-foreground">
-                Bridge AI and humans seamlessly during voice calls via SMS.
+                Enable 2-way messaging with your voice agent via SMS.
               </p>
             </div>
 
