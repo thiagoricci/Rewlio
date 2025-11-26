@@ -1,16 +1,19 @@
-# Rilio - Integration Guide
+# Rewlio - Integration Guide
 
 ## Overview
-**Rilio** is a smooth, intelligent way to handle messages. This system allows Retell AI voice agents to collect hard-to-spell information (emails, addresses, account numbers) from callers via SMS.
+
+**Rewlio** is a smooth, intelligent way to handle messages. This system allows Retell AI voice agents to collect hard-to-spell information (emails, addresses, account numbers) from callers via SMS.
 
 **Multi-Tenant Architecture:** Each user has their own Twilio credentials, enabling multiple users to run independent SMS collection systems with their own phone numbers and billing.
 
 ## Architecture
 
 ### Backend Functions
+
 Three Lovable Cloud edge functions power the system:
 
 1. **retell-webhook** - Main endpoint for Retell AI
+
    - Receives info requests from voice agent
    - Validates user authentication
    - Fetches user's Twilio credentials from database
@@ -20,6 +23,7 @@ Three Lovable Cloud edge functions power the system:
    - Returns validated data to AI
 
 2. **twilio-webhook** - SMS response handler
+
    - Receives incoming SMS from Twilio
    - Identifies user by phone number (To field)
    - Validates information based on type
@@ -32,6 +36,7 @@ Three Lovable Cloud edge functions power the system:
    - Sends timeout SMS to callers using respective user's credentials
 
 ### Database Schema
+
 ```sql
 TABLE: user_credentials
 - id (uuid)
@@ -60,20 +65,25 @@ TABLE: info_requests
 ## User Setup
 
 ### Authentication
+
 Users must sign up and log in to use the system:
+
 1. Navigate to the application
 2. Sign up with email and password
 3. Configure Twilio credentials in Settings
 
 ### Twilio Credentials Configuration
+
 Each user must configure their own Twilio credentials:
 
 1. **Get Twilio Credentials:**
+
    - Sign up at [twilio.com](https://www.twilio.com)
    - Get Account SID and Auth Token from console
    - Purchase a phone number with SMS capabilities
 
 2. **Configure in Application:**
+
    - Navigate to Settings page
    - Enter your Twilio Account SID
    - Enter your Twilio Auth Token
@@ -93,6 +103,7 @@ Each user must configure their own Twilio credentials:
 After configuring your Twilio credentials in the app Settings:
 
 1. **Get your unique webhook URL**:
+
    - Go to Settings page in the application
    - After saving your Twilio credentials, scroll down to the "Retell AI Webhook Configuration" section
    - Copy your unique webhook URL (format: `https://[project].supabase.co/functions/v1/retell-webhook/[your-user-id]`)
@@ -129,6 +140,7 @@ Add this function definition:
 3. **Set Webhook URL**
 
 Configure your function webhook endpoint with your unique URL from Settings:
+
 ```
 https://kqzsgqqwnthclrlcfkgs.supabase.co/functions/v1/retell-webhook/[your-user-id]
 ```
@@ -138,10 +150,10 @@ https://kqzsgqqwnthclrlcfkgs.supabase.co/functions/v1/retell-webhook/[your-user-
 Example agent instruction:
 
 ```
-When the customer needs to provide their email address, physical address, 
+When the customer needs to provide their email address, physical address,
 or account number, use the collect_info_via_sms function.
 
-Say: "To make sure I get that exactly right, I'll send you a quick text. 
+Say: "To make sure I get that exactly right, I'll send you a quick text.
 Just reply with your {info_type} and we'll continue."
 
 Once you receive the information, confirm it:
@@ -153,6 +165,7 @@ Once you receive the information, confirm it:
 ### POST /functions/v1/retell-webhook/{user_id}
 
 **URL Format:** Each user has a unique webhook URL that includes their user ID:
+
 ```
 https://kqzsgqqwnthclrlcfkgs.supabase.co/functions/v1/retell-webhook/{user_id}
 ```
@@ -160,6 +173,7 @@ https://kqzsgqqwnthclrlcfkgs.supabase.co/functions/v1/retell-webhook/{user_id}
 **Authentication:** The user_id in the URL path identifies which user's Twilio credentials to use
 
 **Request Body (from Retell AI):**
+
 ```json
 {
   "call": {
@@ -175,6 +189,7 @@ https://kqzsgqqwnthclrlcfkgs.supabase.co/functions/v1/retell-webhook/{user_id}
 ```
 
 **Request Body (from Test Page):**
+
 ```json
 {
   "call_id": "string",
@@ -186,6 +201,7 @@ https://kqzsgqqwnthclrlcfkgs.supabase.co/functions/v1/retell-webhook/{user_id}
 ```
 
 **Response (Success):**
+
 ```json
 {
   "success": true,
@@ -196,6 +212,7 @@ https://kqzsgqqwnthclrlcfkgs.supabase.co/functions/v1/retell-webhook/{user_id}
 ```
 
 **Response (No Credentials):**
+
 ```json
 {
   "success": false,
@@ -204,6 +221,7 @@ https://kqzsgqqwnthclrlcfkgs.supabase.co/functions/v1/retell-webhook/{user_id}
 ```
 
 **Response (Timeout):**
+
 ```json
 {
   "success": false,
@@ -215,6 +233,7 @@ https://kqzsgqqwnthclrlcfkgs.supabase.co/functions/v1/retell-webhook/{user_id}
 ### POST /functions/v1/twilio-webhook
 
 Receives Twilio SMS webhook (form-encoded):
+
 - `From`: Sender's phone number
 - `To`: Your Twilio phone number (used to identify user account)
 - `Body`: Message text
@@ -226,16 +245,19 @@ Returns empty TwiML response.
 ## Validation Rules
 
 ### Email
+
 - Format: `name@domain.com`
 - Normalized: lowercase, trimmed
 - Error: "Please use format: name@example.com"
 
 ### Address
+
 - Must contain street number (digits)
 - Minimum 15 characters
 - Error: "Please include street number, city, state, and ZIP"
 
 ### Account Number
+
 - Extract digits only
 - 5-20 digits
 - Error: "Account number must be 5-20 digits"
@@ -243,6 +265,7 @@ Returns empty TwiML response.
 ## SMS Message Templates
 
 ### Request
+
 ```
 Hi! To continue with your call, please reply with your {type}.
 
@@ -252,6 +275,7 @@ Request ID: ABC123
 ```
 
 ### Confirmation
+
 ```
 ✓ Got it!
 
@@ -261,6 +285,7 @@ Continuing with your call...
 ```
 
 ### Error
+
 ```
 That doesn't look right.
 
@@ -270,6 +295,7 @@ Please reply again with the correct information.
 ```
 
 ### Timeout
+
 ```
 This request has expired.
 
@@ -279,12 +305,14 @@ If you're still on the call, ask the agent to send a new request.
 ## Dashboard
 
 Access the dashboard at `/dashboard` to:
+
 - View your requests (last 100)
 - Filter by status (pending, completed, expired)
 - Search by phone number or call ID
 - Real-time updates (auto-refresh every 5s)
 
-**Privacy:** 
+**Privacy:**
+
 - Users only see their own requests
 - Phone numbers are masked: `+1***\*\*\*8901`
 
@@ -314,10 +342,12 @@ SELECT cron.schedule(
 The application includes a test page at `/test` to verify your setup:
 
 1. **Prerequisites:**
+
    - You must be logged in
    - Your Twilio credentials must be configured in Settings
 
 2. **Steps:**
+
    - Navigate to `/test`
    - The page will automatically use your user ID from the logged-in session
    - Enter a test call ID
@@ -334,6 +364,7 @@ The application includes a test page at `/test` to verify your setup:
 ### Manual API Test
 
 Test the retell-webhook function with your unique webhook URL:
+
 ```bash
 # Replace [your-user-id] with your actual user ID from Settings
 
@@ -355,26 +386,31 @@ curl -X POST https://kqzsgqqwnthclrlcfkgs.supabase.co/functions/v1/retell-webhoo
 ### Validation Tests
 
 **Valid Email:**
+
 ```
 john@example.com ✅
 ```
 
 **Invalid Email:**
+
 ```
 notanemail ❌
 ```
 
 **Valid Address:**
+
 ```
 123 Main Street, Springfield, IL 62701 ✅
 ```
 
 **Invalid Address:**
+
 ```
 Just a city ❌
 ```
 
 **Valid Account Number:**
+
 ```
 1234567890 ✅
 12-345-678 ✅ (normalizes to 12345678)
@@ -383,13 +419,16 @@ Just a city ❌
 ## Monitoring
 
 ### Logs
+
 View function logs in Lovable Cloud:
+
 - Click "Cloud" tab
 - Navigate to "Functions"
 - Select function name
 - View execution logs
 
 ### Metrics to Monitor
+
 - Request creation rate
 - SMS delivery success rate
 - Average response time
@@ -399,6 +438,7 @@ View function logs in Lovable Cloud:
 ## Security
 
 ### Data Protection
+
 - Each user's data is isolated with Row-Level Security (RLS)
 - Users can only access their own requests and credentials
 - Phone numbers masked in UI
@@ -406,18 +446,22 @@ View function logs in Lovable Cloud:
 - No PII in logs
 
 ### Authentication
+
 - Email/password authentication required
 - Session-based access control
 - All API endpoints validate user identity
 
 ### Twilio Credentials
+
 - Stored encrypted in database
 - Never exposed to client-side code
 - Each user manages their own credentials
 - No shared credentials between users
 
 ### Rate Limiting
+
 Consider implementing rate limiting:
+
 - Max 5 requests per phone number per hour per user
 - Prevents abuse and spam
 - Protects Twilio account balance
@@ -425,12 +469,14 @@ Consider implementing rate limiting:
 ## Troubleshooting
 
 ### "User Twilio credentials not found"
+
 1. Log in to the application
 2. Navigate to Settings
 3. Configure your Twilio credentials
 4. Verify all three fields are filled correctly
 
 ### SMS Not Received
+
 1. Check Twilio account balance
 2. Verify phone number is valid E.164 format (+12345678901)
 3. Check function logs for errors
@@ -438,6 +484,7 @@ Consider implementing rate limiting:
 5. Confirm Twilio webhook is configured for your phone number
 
 ### Request Timeout
+
 1. Check if SMS was delivered in Twilio console
 2. Verify twilio-webhook is receiving responses
 3. Check that phone number in Twilio webhook matches your configured number
@@ -445,12 +492,14 @@ Consider implementing rate limiting:
 5. Check validation logic matches your response format
 
 ### Invalid Responses
+
 1. Review validation logic in twilio-webhook
 2. Check error messages sent to users
 3. Verify the info_type matches the data format
 4. Update validation rules if needed
 
 ### Cannot See Requests in Dashboard
+
 1. Verify you are logged in
 2. Check that requests have your user_id in the database
 3. Confirm RLS policies are correctly configured
@@ -459,6 +508,7 @@ Consider implementing rate limiting:
 ## Support
 
 For issues or questions:
+
 - Check function logs in Lovable Cloud dashboard
 - Review database records in Cloud console
 - Test with known valid inputs using the Test page

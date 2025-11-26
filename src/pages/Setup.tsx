@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -67,12 +66,11 @@ const Setup = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Setup Guide</h1>
           <p className="text-muted-foreground">
-            Follow these steps to configure your Rilio account and start collecting information via SMS
+            Follow these steps to configure your Rewlio account and start collecting information via SMS
           </p>
         </div>
 
@@ -88,26 +86,26 @@ const Setup = () => {
           <TabsContent value="overview" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>What is Rilio?</CardTitle>
+                <CardTitle>What is Rewlio?</CardTitle>
                 <CardDescription>
-                  Rilio enables Retell AI voice agents to collect information and get real-time human authorization via SMS
+                  Rewlio enables Retell AI voice agents to collect information and get real-time human authorization via SMS
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-foreground">
-                  Rilio powers two essential workflows for AI voice agents:
+                  Rewlio powers two essential workflows for AI voice agents:
                 </p>
 
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <h3 className="font-semibold text-lg">Use Case 1: Human-in-the-Loop Authorization</h3>
                     <p className="text-foreground text-sm">
-                      Get real-time approval from humans during AI conversations. When your AI agent needs 
-                      authorization to proceed with an action, Rilio sends an SMS to the designated approver 
+                      Get real-time approval from humans during AI conversations. When your AI agent needs
+                      authorization to proceed with an action, Rewlio sends an SMS to the designated approver
                       and waits for their response before continuing the conversation.
                     </p>
                     <ol className="space-y-1 list-decimal list-inside text-foreground text-sm ml-4">
-                      <li>AI agent requests human approval via Rilio webhook</li>
+                      <li>AI agent requests human approval via Rewlio webhook</li>
                       <li>SMS sent to approver asking for authorization</li>
                       <li>Human responds with approval or rejection</li>
                       <li>AI agent receives the decision and proceeds accordingly</li>
@@ -117,15 +115,15 @@ const Setup = () => {
                   <div className="space-y-2">
                     <h3 className="font-semibold text-lg">Use Case 2: Information Collection</h3>
                     <p className="text-foreground text-sm">
-                      Seamlessly collect hard-to-spell information like email addresses, physical addresses, 
-                      or account numbers. Rilio sends an SMS to your caller, receives their response, validates 
+                      Seamlessly collect hard-to-spell information like email addresses, physical addresses,
+                      or account numbers. Rewlio sends an SMS to your caller, receives their response, validates
                       it, and returns the information to your agent.
                     </p>
                     <ol className="space-y-1 list-decimal list-inside text-foreground text-sm ml-4">
-                      <li>AI agent calls Rilio webhook to request information</li>
+                      <li>AI agent calls Rewlio webhook to request information</li>
                       <li>SMS sent to caller with instructions</li>
                       <li>Caller replies with requested information</li>
-                      <li>Rilio validates response and returns it to AI agent</li>
+                      <li>Rewlio validates response and returns it to AI agent</li>
                       <li>AI agent continues with collected information</li>
                     </ol>
                   </div>
@@ -134,8 +132,8 @@ const Setup = () => {
                 <Alert>
                   <Info className="h-4 w-4" />
                   <AlertDescription>
-                    <strong>Prerequisites:</strong> You'll need a Twilio account with an SMS-enabled 
-                    phone number and a Retell AI account to use Rilio.
+                    <strong>Prerequisites:</strong> You'll need a Twilio account with an SMS-enabled
+                    phone number and a Retell AI account to use Rewlio.
                   </AlertDescription>
                 </Alert>
 
@@ -147,7 +145,7 @@ const Setup = () => {
                   <ul className="space-y-2 ml-7">
                     <li className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-primary" />
-                      <span>Rilio account created</span>
+                      <span>Rewlio account created</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle className={`h-4 w-4 ${hasCredentials ? 'text-primary' : 'text-muted-foreground'}`} />
@@ -204,7 +202,7 @@ const Setup = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Step 2: Configure Credentials in Rilio</CardTitle>
+                <CardTitle>Step 2: Configure Credentials in Rewlio</CardTitle>
                 <CardDescription>Save your Twilio credentials in Settings</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -248,7 +246,7 @@ const Setup = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Step 3: Configure Twilio Webhook</CardTitle>
-                <CardDescription>Set up Twilio to forward SMS replies to Rilio</CardDescription>
+                <CardDescription>Set up Twilio to forward SMS replies to Rewlio</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Alert>
@@ -391,7 +389,7 @@ const Setup = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Step 3: Set Function Webhook URL</CardTitle>
-                <CardDescription>Connect the function to Rilio</CardDescription>
+                <CardDescription>Connect the function to Rewlio</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {hasCredentials ? (

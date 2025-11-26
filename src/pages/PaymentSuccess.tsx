@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Loader2 } from "lucide-react";
-import Navigation from "@/components/Navigation";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function PaymentSuccess() {
@@ -78,7 +77,6 @@ export default function PaymentSuccess() {
 
   return (
     <>
-      <Navigation />
       <div className="min-h-screen bg-background flex items-center justify-center p-8">
         <Card className="max-w-md w-full">
           <CardHeader className="text-center">

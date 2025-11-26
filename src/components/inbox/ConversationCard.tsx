@@ -1,8 +1,7 @@
 import { formatDistanceToNow } from "date-fns";
-import { MessageSquare, Trash2 } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Trash2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { maskPhoneNumber } from "@/lib/phone-utils";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface ConversationCardProps {
   phoneNumber: string;
@@ -24,8 +23,8 @@ export function ConversationCard({
   onDelete,
 }: ConversationCardProps) {
   return (
-    <Card
-      className={`p-5 cursor-pointer transition-all hover:bg-accent/50 active:scale-[0.98] relative group ${
+    <div
+      className={`p-4 cursor-pointer transition-colors hover:bg-accent/50 relative group border-b last:border-b-0 ${
         isSelected ? "bg-accent" : ""
       }`}
       onClick={onClick}
@@ -34,7 +33,7 @@ export function ConversationCard({
         <Button
           variant="ghost"
           size="icon"
-          className="absolute bottom-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground"
+          className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10"
           onClick={(e) => {
             e.stopPropagation();
             onDelete();
@@ -43,29 +42,24 @@ export function ConversationCard({
           <Trash2 className="h-4 w-4" />
         </Button>
       )}
-      <div className="flex items-start gap-4">
-        <div className="flex-shrink-0">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <MessageSquare className="h-6 w-6 text-primary" />
-          </div>
-        </div>
+      <div className="flex items-start gap-3">
+        <Avatar className="h-10 w-10 border">
+          <AvatarFallback className="bg-primary/10 text-primary">
+            <User className="h-5 w-5" />
+          </AvatarFallback>
+        </Avatar>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-1">
-            <p className="font-semibold text-base truncate">
+          <div className="flex items-center justify-between mb-1 pr-6">
+            <p className="font-medium text-sm text-foreground truncate">
               {phoneNumber}
             </p>
-            <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
+            <span className="text-[10px] text-muted-foreground flex-shrink-0 ml-2">
               {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}
             </span>
           </div>
-          <p className="text-sm text-muted-foreground truncate">{latestMessage}</p>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="text-xs text-muted-foreground">
-              {messageCount} {messageCount === 1 ? "message" : "messages"}
-            </span>
-          </div>
+          <p className="text-sm text-muted-foreground truncate line-clamp-1 pr-2">{latestMessage}</p>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
-# Rilio
+# Rewlio
 
-**Rilio** - A smooth, intelligent way to handle messages. This application seamlessly collects hard-to-spell information from voice calls via SMS.
+**Rewlio** - A smooth, intelligent way to handle messages. This application seamlessly collects hard-to-spell information from voice calls via SMS.
 
 ## Project info
 

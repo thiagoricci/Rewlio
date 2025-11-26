@@ -2,14 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { XCircle } from "lucide-react";
-import Navigation from "@/components/Navigation";
 
 export default function PaymentCanceled() {
   const navigate = useNavigate();
 
   return (
     <>
-      <Navigation />
       <div className="min-h-screen bg-background flex items-center justify-center p-8">
         <Card className="max-w-md w-full">
           <CardHeader className="text-center">

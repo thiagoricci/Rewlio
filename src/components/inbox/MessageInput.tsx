@@ -70,7 +70,7 @@ export function MessageInput({ phoneNumber, onMessageSent }: MessageInputProps) 
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -78,33 +78,35 @@ export function MessageInput({ phoneNumber, onMessageSent }: MessageInputProps) 
   };
 
   return (
-    <div className="border-t p-4 bg-card">
-      <div className="flex gap-2">
+    <div className="p-4 bg-background border-t">
+      <div className="relative flex items-end gap-2">
         <Textarea
-          placeholder="Type your message..."
+          placeholder="Type a message..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyDown}
           disabled={isSending}
-          className="min-h-[44px] max-h-[100px] resize-none"
+          className="min-h-[44px] max-h-[150px] resize-none rounded-2xl py-3 px-4 bg-muted/50 border-0 focus-visible:ring-1 focus-visible:ring-primary/20"
           maxLength={1600}
         />
         <Button
           onClick={handleSend}
           disabled={isSending || !message.trim()}
           size="icon"
-          className="h-[44px] w-[44px] shrink-0"
+          className="h-[44px] w-[44px] shrink-0 rounded-full transition-all shadow-sm"
         >
           {isSending ? (
             <Loader2 className="h-5 w-5 animate-spin" />
           ) : (
-            <Send className="h-5 w-5" />
+            <Send className="h-5 w-5 ml-0.5" />
           )}
         </Button>
       </div>
-      <p className="text-xs text-muted-foreground mt-2">
-        {message.length}/1600 characters • Press Enter to send, Shift+Enter for new line
-      </p>
+      <div className="flex justify-end mt-2 px-1">
+        <span className="text-[10px] text-muted-foreground">
+          {message.length}/1600
+        </span>
+      </div>
     </div>
   );
 }

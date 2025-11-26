@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, CreditCard, Zap, AlertCircle, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import Navigation from "@/components/Navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useCredits } from "@/hooks/use-credits";
 
 interface CreditPackage {
   id: string;
@@ -18,11 +19,22 @@ interface CreditPackage {
 
 export default function Credits() {
   const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [creditBalance, setCreditBalance] = useState<number | null>(null);
-  const [packages, setPackages] = useState<CreditPackage[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
+  const { creditBalance, isLoading: creditsLoading, invalidateCredits } = useCredits();
+
+  const { data: packages = [] } = useQuery({
+    queryKey: ["packages"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("stripe_products")
+        .select("*")
+        .order("price_cents", { ascending: true });
+
+      if (error) throw error;
+      return data as CreditPackage[];
+    },
+  });
 
   useEffect(() => {
     // Check for payment success parameter
@@ -33,72 +45,16 @@ export default function Credits() {
       });
       // Remove the parameter from URL
       setSearchParams({});
+      invalidateCredits();
     }
-
-    fetchCredits();
-    fetchPackages();
-
-    // Refetch credits when window gains focus (user returns to tab)
-    const handleFocus = () => {
-      fetchCredits();
-    };
-    window.addEventListener('focus', handleFocus);
-
-    // Optional: Poll for updates every 30 seconds while on this page
-    const pollInterval = setInterval(() => {
-      fetchCredits();
-    }, 30000);
-
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-      clearInterval(pollInterval);
-    };
   }, []);
 
-  const fetchCredits = async (showRefreshing = false) => {
-    if (showRefreshing) setRefreshing(true);
-    
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from("user_credits")
-        .select("credits")
-        .eq("user_id", user.id)
-        .single();
-
-      if (error) {
-        console.error("Error fetching credits:", error);
-        return;
-      }
-
-      setCreditBalance(data.credits);
-    } finally {
-      if (showRefreshing) setRefreshing(false);
-    }
-  };
-
   const handleManualRefresh = () => {
-    fetchCredits(true);
+    invalidateCredits();
     toast({
       title: "Refreshing",
       description: "Checking for updated credit balance...",
     });
-  };
-
-  const fetchPackages = async () => {
-    const { data, error } = await supabase
-      .from("stripe_products")
-      .select("*")
-      .order("price_cents", { ascending: true });
-
-    if (error) {
-      console.error("Error fetching packages:", error);
-      return;
-    }
-
-    setPackages(data);
   };
 
   const handlePurchase = async (priceId: string) => {
@@ -129,7 +85,6 @@ export default function Credits() {
 
   return (
     <>
-      <Navigation />
       <div className="min-h-screen bg-background p-8">
         <div className="container max-w-6xl">
           <div className="mb-8">
@@ -150,17 +105,17 @@ export default function Credits() {
                   variant="ghost"
                   size="sm"
                   onClick={handleManualRefresh}
-                  disabled={refreshing}
+                  disabled={creditsLoading}
                 >
-                  <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`h-4 w-4 ${creditsLoading ? 'animate-spin' : ''}`} />
                 </Button>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-4xl font-bold text-primary">
-                {creditBalance !== null ? creditBalance : "..."} credits
+                {creditBalance !== undefined && creditBalance !== null ? creditBalance : "..."} credits
               </div>
-              {creditBalance !== null && creditBalance <= 10 && (
+              {creditBalance !== undefined && creditBalance !== null && creditBalance <= 10 && (
                 <Alert className="mt-4 border-warning bg-warning/10">
                   <AlertCircle className="h-4 w-4 text-warning" />
                   <AlertDescription className="text-warning">

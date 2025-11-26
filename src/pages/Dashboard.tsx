@@ -5,7 +5,6 @@ import { InfoRequestList } from "@/components/dashboard/InfoRequestList";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { Database, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Navigation from "@/components/Navigation";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 
@@ -85,7 +84,6 @@ export default function Dashboard() {
 
   return (
     <>
-      <Navigation />
       <div className="min-h-screen bg-background">
         <div className="border-b bg-card">
           <div className="container mx-auto px-4 py-6">

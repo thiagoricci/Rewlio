@@ -1,7 +1,6 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "./StatusBadge";
-import { maskPhoneNumber } from "@/lib/phone-utils";
 import { formatDistanceToNow } from "date-fns";
 import { Trash2 } from "lucide-react";
 
@@ -26,7 +25,7 @@ export function InfoRequestRow({ request, onDelete }: InfoRequestRowProps) {
   return (
     <TableRow>
       <TableCell className="font-mono text-sm">{request.request_id}</TableCell>
-      <TableCell className="font-mono text-sm">{maskPhoneNumber(request.recipient_phone)}</TableCell>
+      <TableCell className="font-mono text-sm">{request.recipient_phone}</TableCell>
       <TableCell>
         <StatusBadge status={request.status} />
       </TableCell>

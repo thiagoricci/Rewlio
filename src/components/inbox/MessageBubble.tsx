@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface MessageBubbleProps {
   message: string;
@@ -10,20 +11,21 @@ export function MessageBubble({ message, direction, timestamp }: MessageBubblePr
   const isInbound = direction === "inbound";
 
   return (
-    <div className={`flex ${isInbound ? "justify-start" : "justify-end"} mb-4`}>
-      <div className={`max-w-[70%] flex flex-col ${isInbound ? "items-start" : "items-end"}`}>
-        <span className={`text-xs text-muted-foreground mb-1 ${isInbound ? "text-left" : "text-right"}`}>
-          {format(new Date(timestamp), "MMM d, yyyy 'at' h:mm a")}
-        </span>
+    <div className={cn("flex w-full mb-4", isInbound ? "justify-start" : "justify-end")}>
+      <div className={cn("flex flex-col max-w-[75%]", isInbound ? "items-start" : "items-end")}>
         <div
-          className={`rounded-lg px-4 py-2 ${
+          className={cn(
+            "px-4 py-2.5 rounded-2xl text-sm shadow-sm",
             isInbound
-              ? "bg-muted text-foreground"
-              : "bg-primary text-primary-foreground"
-          }`}
+              ? "bg-secondary text-secondary-foreground rounded-tl-none"
+              : "bg-primary text-primary-foreground rounded-tr-none"
+          )}
         >
-          <p className="text-sm whitespace-pre-wrap break-words">{message}</p>
+          <p className="whitespace-pre-wrap break-words leading-relaxed">{message}</p>
         </div>
+        <span className="text-[10px] text-muted-foreground mt-1 px-1">
+          {format(new Date(timestamp), "h:mm a")}
+        </span>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserCredentials } from "@/hooks/use-user-credentials";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,60 +18,33 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import Navigation from "@/components/Navigation";
 import { isValidE164 } from "@/lib/phone-utils";
 
 const Settings = () => {
   const { toast } = useToast();
+  const { credentials, isLoading: fetching, invalidateCredentials } = useUserCredentials();
   const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(true);
   const [accountSid, setAccountSid] = useState("");
   const [authToken, setAuthToken] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [hasCredentials, setHasCredentials] = useState(false);
-  const [userId, setUserId] = useState("");
   const [copied, setCopied] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  const hasCredentials = !!credentials;
+  const userId = credentials?.user_id;
+
   useEffect(() => {
-    fetchCredentials();
-  }, []);
-
-  const fetchCredentials = async () => {
-    setFetching(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      setUserId(user.id);
-
-      const { data, error } = await supabase
-        .from("user_credentials")
-        .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (error && error.code !== "PGRST116") {
-        throw error;
-      }
-
-      if (data) {
-        setAccountSid(data.twilio_account_sid);
-        setAuthToken("••••" + data.twilio_auth_token.slice(-4));
-        setPhoneNumber(data.twilio_phone_number);
-        setHasCredentials(true);
-      }
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error loading credentials",
-        description: error.message,
-      });
-    } finally {
-      setFetching(false);
+    if (credentials) {
+      setAccountSid(credentials.twilio_account_sid);
+      setAuthToken("••••" + credentials.twilio_auth_token.slice(-4));
+      setPhoneNumber(credentials.twilio_phone_number);
+    } else {
+      setAccountSid("");
+      setAuthToken("");
+      setPhoneNumber("");
     }
-  };
+  }, [credentials]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,8 +91,7 @@ const Settings = () => {
         description: "Your Twilio credentials have been saved successfully",
       });
 
-      setHasCredentials(true);
-      await fetchCredentials();
+      await invalidateCredentials();
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -158,8 +131,9 @@ const Settings = () => {
       setAccountSid("");
       setAuthToken("");
       setPhoneNumber("");
-      setHasCredentials(false);
       setShowDeleteDialog(false);
+      
+      await invalidateCredentials();
 
       toast({
         title: "Credentials removed",
@@ -179,7 +153,6 @@ const Settings = () => {
   if (fetching) {
     return (
       <>
-        <Navigation />
         <div className="min-h-screen flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -189,7 +162,6 @@ const Settings = () => {
 
   return (
     <>
-      <Navigation />
       <div className="container mx-auto px-4 py-8">
         <Card className="max-w-2xl mx-auto">
           <CardHeader>

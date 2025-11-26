@@ -1,17 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import Navigation from "@/components/Navigation";
 import { ConversationCard } from "@/components/inbox/ConversationCard";
 import { MessageBubble } from "@/components/inbox/MessageBubble";
 import { MobileHeader } from "@/components/inbox/MobileHeader";
 import { MessageInput } from "@/components/inbox/MessageInput";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Inbox as InboxIcon, MessageSquare } from "lucide-react";
+import { Inbox as InboxIcon, MessageSquare, User } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface Message {
   id: string;
@@ -187,38 +187,41 @@ export default function Inbox() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <InboxIcon className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">Inbox</h1>
+    <div className="h-[calc(100vh-4rem)] bg-background p-4 md:p-6 overflow-hidden">
+      <div className="h-full max-w-7xl mx-auto flex flex-col">
+        <div className="mb-6 flex-shrink-0">
+          <div className="flex items-center gap-3 mb-1">
+            <InboxIcon className="h-6 w-6 text-primary" />
+            <h1 className="text-2xl font-bold tracking-tight">Inbox</h1>
           </div>
-          <p className="text-muted-foreground">
-            View all your SMS conversations in one place
+          <p className="text-muted-foreground text-sm">
+            Manage your SMS conversations
           </p>
         </div>
 
         {conversations.length === 0 ? (
-          <Card className="p-12 text-center">
-            <MessageSquare className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+          <Card className="flex-1 flex flex-col items-center justify-center p-12 text-center border-dashed">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+              <MessageSquare className="h-8 w-8 text-muted-foreground" />
+            </div>
             <h2 className="text-xl font-semibold mb-2">No messages yet</h2>
-            <p className="text-muted-foreground">
-              Your SMS conversations will appear here once you start collecting information
+            <p className="text-muted-foreground max-w-sm mx-auto">
+              Your SMS conversations will appear here once you start collecting information from your users.
             </p>
           </Card>
         ) : (
-          <>
+          <div className="flex-1 flex overflow-hidden rounded-xl border bg-card shadow-sm">
             {/* Mobile: Show conversations OR messages */}
             {isMobile ? (
               <>
                 {/* Conversations List (mobile) */}
                 {!showMessages && (
-                  <Card className="p-4">
-                    <h2 className="font-semibold mb-4">Conversations</h2>
-                    <ScrollArea className="h-[calc(100vh-240px)]">
-                      <div className="space-y-2">
+                  <div className="w-full flex flex-col h-full">
+                    <div className="p-4 border-b bg-muted/30">
+                      <h2 className="font-semibold">Conversations</h2>
+                    </div>
+                    <ScrollArea className="flex-1">
+                      <div className="divide-y">
                         {conversations.map((conversation) => (
                           <ConversationCard
                             key={conversation.phoneNumber}
@@ -232,19 +235,19 @@ export default function Inbox() {
                         ))}
                       </div>
                     </ScrollArea>
-                  </Card>
+                  </div>
                 )}
 
                 {/* Message Thread (mobile) */}
                 {showMessages && selectedPhone && (
-                  <Card className="p-0 overflow-hidden flex flex-col h-[calc(100vh-180px)]">
-                    <MobileHeader 
-                      phoneNumber={selectedPhone} 
+                  <div className="w-full flex flex-col h-full bg-background">
+                    <MobileHeader
+                      phoneNumber={selectedPhone}
                       onBack={handleBackToList}
                     />
                     <ScrollArea className="flex-1 p-4" ref={scrollRef}>
                       {selectedMessages.length > 0 ? (
-                        <div className="space-y-2">
+                        <div className="space-y-4">
                           {selectedMessages.map((msg) => (
                             <MessageBubble
                               key={msg.id}
@@ -255,83 +258,98 @@ export default function Inbox() {
                           ))}
                         </div>
                       ) : (
-                        <div className="text-center text-muted-foreground py-8">
-                          No messages in this conversation
+                        <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8 text-center">
+                          <p>No messages in this conversation</p>
                         </div>
                       )}
                     </ScrollArea>
-                    <MessageInput 
+                    <MessageInput
                       phoneNumber={selectedPhone}
                       onMessageSent={() => refetch()}
                     />
-                  </Card>
+                  </div>
                 )}
               </>
             ) : (
               /* Desktop: Show both panels side by side */
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <>
                 {/* Conversations List */}
-                <div className="lg:col-span-1">
-                  <Card className="p-4">
-                    <h2 className="font-semibold mb-4">Conversations</h2>
-                    <ScrollArea className="h-[600px]">
-                      <div className="space-y-2">
-                        {conversations.map((conversation) => (
-                  <ConversationCard
-                    key={conversation.phoneNumber}
-                    phoneNumber={conversation.phoneNumber}
-                    latestMessage={conversation.latestMessage}
-                    timestamp={conversation.latestTimestamp}
-                    messageCount={conversation.messageCount}
-                    isSelected={selectedPhone === conversation.phoneNumber}
-                    onClick={() => handleConversationSelect(conversation.phoneNumber)}
-                    onDelete={() => handleDeleteClick(conversation.phoneNumber)}
-                  />
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  </Card>
+                <div className="w-80 border-r flex flex-col bg-muted/10">
+                  <div className="p-4 border-b bg-background/50 backdrop-blur-sm sticky top-0 z-10">
+                    <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">Conversations</h2>
+                  </div>
+                  <ScrollArea className="flex-1">
+                    <div className="divide-y">
+                      {conversations.map((conversation) => (
+                        <ConversationCard
+                          key={conversation.phoneNumber}
+                          phoneNumber={conversation.phoneNumber}
+                          latestMessage={conversation.latestMessage}
+                          timestamp={conversation.latestTimestamp}
+                          messageCount={conversation.messageCount}
+                          isSelected={selectedPhone === conversation.phoneNumber}
+                          onClick={() => handleConversationSelect(conversation.phoneNumber)}
+                          onDelete={() => handleDeleteClick(conversation.phoneNumber)}
+                        />
+                      ))}
+                    </div>
+                  </ScrollArea>
                 </div>
 
                 {/* Message Thread */}
-                <div className="lg:col-span-2">
-                  <Card className="p-0 overflow-hidden flex flex-col h-[700px]">
-                    <div className="border-b p-4">
-                      <h2 className="font-semibold">
-                        {selectedPhone ? `Conversation with ${selectedPhone}` : "Select a conversation"}
-                      </h2>
-                    </div>
-                    <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-                      {selectedMessages.length > 0 ? (
-                        <div className="space-y-2">
-                          {selectedMessages.map((msg) => (
-                            <MessageBubble
-                              key={msg.id}
-                              message={msg.message_body}
-                              direction={msg.direction}
-                              timestamp={msg.created_at}
-                            />
-                          ))}
+                <div className="flex-1 flex flex-col bg-background min-w-0">
+                  {selectedPhone ? (
+                    <>
+                      <div className="h-14 border-b flex items-center px-6 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8 border">
+                            <AvatarFallback className="bg-primary/10 text-primary">
+                              <User className="h-4 w-4" />
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h2 className="font-semibold text-sm">{selectedPhone}</h2>
+                          </div>
                         </div>
-                      ) : (
-                        <div className="text-center text-muted-foreground py-8">
-                          {selectedPhone ? "No messages in this conversation" : "Select a conversation to view messages"}
-                        </div>
-                      )}
-                    </ScrollArea>
-                    {selectedPhone && (
-                      <MessageInput 
+                      </div>
+                      <ScrollArea className="flex-1 p-6" ref={scrollRef}>
+                        {selectedMessages.length > 0 ? (
+                          <div className="space-y-1">
+                            {selectedMessages.map((msg) => (
+                              <MessageBubble
+                                key={msg.id}
+                                message={msg.message_body}
+                                direction={msg.direction}
+                                timestamp={msg.created_at}
+                              />
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                            <p>No messages in this conversation</p>
+                          </div>
+                        )}
+                      </ScrollArea>
+                      <MessageInput
                         phoneNumber={selectedPhone}
                         onMessageSent={() => refetch()}
                       />
-                    )}
-                  </Card>
+                    </>
+                  ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground bg-muted/5">
+                      <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                        <MessageSquare className="h-8 w-8 text-muted-foreground/50" />
+                      </div>
+                      <p className="font-medium">Select a conversation</p>
+                      <p className="text-sm text-muted-foreground/80 mt-1">Choose a contact to view message history</p>
+                    </div>
+                  )}
                 </div>
-              </div>
+              </>
             )}
-          </>
+          </div>
         )}
-      </main>
+      </div>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>

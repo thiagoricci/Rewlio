@@ -27,7 +27,7 @@ const Index = () => {
       <header className="container mx-auto px-4 py-6 flex justify-between items-center border-b">
         <div className="flex items-center space-x-2">
           <MessageSquare className="h-6 w-6 text-primary" />
-          <span className="font-semibold text-lg">Rilio</span>
+          <span className="font-semibold text-lg">Rewlio</span>
         </div>
         <div className="flex space-x-4">
           {user ? (
@@ -60,7 +60,7 @@ const Index = () => {
               <span className="text-sm font-medium text-primary">Retell + Twilio</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">
-              Rilio
+              Rewlio
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
               Enable 2-way messaging with your voice agent. Get real-time human authorization and collect information seamlessly during AI conversations via SMS.
@@ -271,7 +271,7 @@ const Index = () => {
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
                 <MessageSquare className="h-5 w-5 text-primary" />
-                <span className="font-semibold">Rilio</span>
+                <span className="font-semibold">Rewlio</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 Enable 2-way messaging with your voice agent via SMS.
@@ -371,7 +371,7 @@ const Index = () => {
                 )}
                 <li>
                   <a
-                    href="mailto:contact@rilio.app"
+                    href="mailto:contact@rewlio.app"
                     className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
                   >
                     <Mail className="h-3 w-3" />
@@ -383,7 +383,7 @@ const Index = () => {
           </div>
 
           <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>© {new Date().getFullYear()} Rilio. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Rewlio. All rights reserved.</p>
           </div>
         </div>
       </footer>
