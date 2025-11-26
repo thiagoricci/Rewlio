@@ -90,25 +90,45 @@ const Setup = () => {
               <CardHeader>
                 <CardTitle>What is Rilio?</CardTitle>
                 <CardDescription>
-                  Rilio enables Retell AI voice agents to collect hard-to-spell information via SMS
+                  Rilio enables Retell AI voice agents to collect information and get real-time human authorization via SMS
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-foreground">
-                  When your AI voice agent needs to collect information like email addresses, 
-                  physical addresses, or account numbers, Rilio seamlessly sends an SMS to your caller, 
-                  receives their response, validates it, and returns the information to your agent.
+                  Rilio powers two essential workflows for AI voice agents:
                 </p>
 
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-lg">How It Works:</h3>
-                  <ol className="space-y-2 list-decimal list-inside text-foreground">
-                    <li>Your Retell AI agent calls the Rilio webhook function</li>
-                    <li>Rilio sends an SMS to the caller via your Twilio account</li>
-                    <li>The caller receives the SMS and replies with their information</li>
-                    <li>Rilio validates the response and returns it to your Retell AI agent</li>
-                    <li>Your agent continues the conversation with the collected information</li>
-                  </ol>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-lg">Use Case 1: Human-in-the-Loop Authorization</h3>
+                    <p className="text-foreground text-sm">
+                      Get real-time approval from humans during AI conversations. When your AI agent needs 
+                      authorization to proceed with an action, Rilio sends an SMS to the designated approver 
+                      and waits for their response before continuing the conversation.
+                    </p>
+                    <ol className="space-y-1 list-decimal list-inside text-foreground text-sm ml-4">
+                      <li>AI agent requests human approval via Rilio webhook</li>
+                      <li>SMS sent to approver asking for authorization</li>
+                      <li>Human responds with approval or rejection</li>
+                      <li>AI agent receives the decision and proceeds accordingly</li>
+                    </ol>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-lg">Use Case 2: Information Collection</h3>
+                    <p className="text-foreground text-sm">
+                      Seamlessly collect hard-to-spell information like email addresses, physical addresses, 
+                      or account numbers. Rilio sends an SMS to your caller, receives their response, validates 
+                      it, and returns the information to your agent.
+                    </p>
+                    <ol className="space-y-1 list-decimal list-inside text-foreground text-sm ml-4">
+                      <li>AI agent calls Rilio webhook to request information</li>
+                      <li>SMS sent to caller with instructions</li>
+                      <li>Caller replies with requested information</li>
+                      <li>Rilio validates response and returns it to AI agent</li>
+                      <li>AI agent continues with collected information</li>
+                    </ol>
+                  </div>
                 </div>
 
                 <Alert>
