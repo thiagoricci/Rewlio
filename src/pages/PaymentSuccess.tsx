@@ -59,7 +59,7 @@ export default function PaymentSuccess() {
         
         // Auto-redirect to credits page after 1.5 seconds
         setTimeout(() => {
-          navigate("/credits");
+          navigate("/credits?payment_success=true");
         }, 1500);
       } else if (pollCount >= maxPolls) {
         // Timeout - redirect anyway after showing the page
@@ -68,7 +68,7 @@ export default function PaymentSuccess() {
         
         // Redirect even on timeout
         setTimeout(() => {
-          navigate("/credits");
+          navigate("/credits?payment_success=true");
         }, 2000);
       }
     }, 1000);
