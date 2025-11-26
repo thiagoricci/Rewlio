@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -20,9 +21,20 @@ export default function Credits() {
   const [refreshing, setRefreshing] = useState(false);
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [packages, setPackages] = useState<CreditPackage[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
 
   useEffect(() => {
+    // Check for payment success parameter
+    if (searchParams.get("payment_success") === "true") {
+      toast({
+        title: "Payment Successful! 🎉",
+        description: "Your credits have been added to your account.",
+      });
+      // Remove the parameter from URL
+      setSearchParams({});
+    }
+
     fetchCredits();
     fetchPackages();
 
