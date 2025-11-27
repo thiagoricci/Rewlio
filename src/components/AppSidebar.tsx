@@ -41,12 +41,7 @@ const items = [
     icon: Inbox,
   },
   {
-    title: "Setup Guide",
-    url: "/setup",
-    icon: BookOpen,
-  },
-  {
-    title: "Test System",
+    title: "Test SMS",
     url: "/test",
     icon: TestTube,
   },
@@ -54,6 +49,11 @@ const items = [
     title: "Credits",
     url: "/credits",
     icon: CreditCard,
+  },
+  {
+    title: "Setup Guide",
+    url: "/setup",
+    icon: BookOpen,
   },
   {
     title: "Settings",

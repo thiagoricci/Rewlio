@@ -85,30 +85,37 @@ export default function Credits() {
 
   return (
     <>
-      <div className="min-h-screen bg-background p-8">
-        <div className="container max-w-6xl">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-2">Credits</h1>
-            <p className="text-muted-foreground">
-              Manage your SMS credits. Each SMS sent costs 1 credit.
-            </p>
+      <div className="min-h-screen bg-background">
+        <div className="border-b bg-card">
+          <div className="container mx-auto px-4 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Zap className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold">Credits</h1>
+                  <p className="text-sm text-muted-foreground">Manage your SMS credits. Each SMS sent costs 1 credit.</p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleManualRefresh}
+                disabled={creditsLoading}
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${creditsLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </div>
           </div>
-
+        </div>
+        <div className="container mx-auto px-4 py-8">
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-primary" />
-                  Current Balance
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleManualRefresh}
-                  disabled={creditsLoading}
-                >
-                  <RefreshCw className={`h-4 w-4 ${creditsLoading ? 'animate-spin' : ''}`} />
-                </Button>
+              <CardTitle className="flex items-center gap-2">
+                <Zap className="h-5 w-5 text-primary" />
+                Current Balance
               </CardTitle>
             </CardHeader>
             <CardContent>

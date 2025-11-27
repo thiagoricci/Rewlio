@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Info, AlertCircle } from "lucide-react";
+import { Loader2, Info, AlertCircle, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "react-router-dom";
@@ -65,12 +64,27 @@ export default function Test() {
 
   return (
     <>
-      <div className="min-h-screen bg-background p-8">
-        <div className="container max-w-2xl">
-          <Card>
+      <div className="min-h-screen bg-background">
+        <div className="border-b bg-card">
+          <div className="container mx-auto px-4 py-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Send className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">Test SMS</h1>
+                <p className="text-sm text-muted-foreground">Send a test SMS request</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="container mx-auto px-4 py-8 flex justify-center">
+          <Card className="max-w-2xl w-full">
             <CardHeader>
-              <CardTitle>Test SMS Collection</CardTitle>
-              <CardDescription>Send a test SMS request</CardDescription>
+              <CardTitle>Send Test SMS</CardTitle>
+              <CardDescription>
+                Simulate an SMS request to test your Twilio integration
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {hasCredentials === false && (
