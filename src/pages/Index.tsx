@@ -371,7 +371,7 @@ const Index = () => {
                 )}
                 <li>
                   <a
-                    href="mailto:contact@rewlio.app"
+                    href="mailto:info@reivien.com"
                     className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
                   >
                     <Mail className="h-3 w-3" />
