@@ -27,6 +27,7 @@ export default function PaymentSuccess() {
         .from("user_credits")
         .select("credits")
         .eq("user_id", user.id)
+        .limit(1)
         .single();
 
       if (data) {
@@ -47,6 +48,7 @@ export default function PaymentSuccess() {
         .from("user_credits")
         .select("credits")
         .eq("user_id", user.id)
+        .limit(1)
         .single();
 
       if (data && initialCredits !== null && data.credits > initialCredits) {

@@ -88,6 +88,7 @@ serve(async (req) => {
         .from("user_credits")
         .select("credits")
         .eq("user_id", userId)
+        .limit(1)
         .single();
 
       if (fetchError) {

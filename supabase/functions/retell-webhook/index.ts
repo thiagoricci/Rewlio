@@ -126,6 +126,7 @@ Deno.serve(async (req) => {
       .from('user_credits')
       .select('credits')
       .eq('user_id', user_id)
+      .limit(1)
       .maybeSingle();
 
     // If user doesn't have credits row, create one with 20 free credits

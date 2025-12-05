@@ -21,7 +21,7 @@ export default function Credits() {
   const [loading, setLoading] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
-  const { creditBalance, isLoading: creditsLoading, invalidateCredits } = useCredits();
+  const { creditBalance, isLoading: creditsLoading, error: creditsError, invalidateCredits } = useCredits();
 
   const { data: packages = [] } = useQuery({
     queryKey: ["packages"],
@@ -120,7 +120,15 @@ export default function Credits() {
             </CardHeader>
             <CardContent>
               <div className="text-4xl font-bold text-primary">
-                {creditBalance !== undefined && creditBalance !== null ? creditBalance : "..."} credits
+                {creditsLoading ? (
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                ) : creditsError ? (
+                  <div className="text-destructive text-lg">
+                    Error loading credits: {creditsError.message || 'Unknown error occurred'}
+                  </div>
+                ) : (
+                  `${creditBalance !== undefined && creditBalance !== null ? creditBalance : "..."} credits`
+                )}
               </div>
               {creditBalance !== undefined && creditBalance !== null && creditBalance <= 10 && (
                 <Alert className="mt-4 border-warning bg-warning/10">
