@@ -9,6 +9,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard,
@@ -68,6 +69,7 @@ export function AppSidebar() {
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const { creditBalance } = useCredits();
+  const { isMobile, setOpenMobile } = useSidebar();
 
   useEffect(() => {
     const {
@@ -99,6 +101,12 @@ export function AppSidebar() {
     }
   };
 
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -124,7 +132,7 @@ export function AppSidebar() {
                     isActive={location.pathname === item.url}
                     tooltip={item.title}
                   >
-                    <Link to={item.url}>
+                    <Link to={item.url} onClick={handleLinkClick}>
                       <item.icon />
                       <span>{item.title}</span>
                     </Link>
@@ -140,7 +148,7 @@ export function AppSidebar() {
           {creditBalance !== undefined && creditBalance !== null && (
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <Link to="/credits">
+                <Link to="/credits" onClick={handleLinkClick}>
                   <Zap className="text-yellow-500" />
                   <span>{creditBalance} Credits</span>
                   <Badge
